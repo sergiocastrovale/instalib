@@ -1,0 +1,30 @@
+appId: com.instalib.app
+productName: Instalib
+directories:
+  output: dist
+  buildResources: build
+files:
+  - out/**
+asarUnpack:
+  - '**/*.node'
+npmRebuild: true
+win:
+  target:
+    - nsis
+    - portable
+nsis:
+  oneClick: true
+  perMachine: false
+portable:
+  artifactName: '${productName}-${version}-portable.${ext}'
+mac:
+  target:
+    - dmg
+    - zip
+  identity: null
+  hardenedRuntime: false
+linux:
+  target:
+    - AppImage
+    - deb
+  category: AudioVideo
