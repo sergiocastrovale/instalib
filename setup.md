@@ -54,7 +54,7 @@ Don't want to depend on your internet, or worried a video might get deleted from
 Instagram? Go to the **Sync** page and click **Start sync** - Instalib downloads
 your videos to a folder on your computer (pick which one in Settings; it
 defaults to your normal Videos folder). Once a video is downloaded, it plays from
-your computer automatically - you'll see an "Offline" badge on it.
+your computer automatically - you'll see a "Downloaded" badge on it.
 
 ## 8. Organize
 

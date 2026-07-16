@@ -16,7 +16,7 @@ import type { PlaybackSourceKind } from '@shared/types'
 const props = defineProps<{ source: PlaybackSourceKind | null }>()
 
 const label = computed(() => {
-  if (props.source === 'local') return 'Offline'
+  if (props.source === 'local') return 'Downloaded'
   if (props.source === 'embed') return 'Embed'
   return 'Web'
 })

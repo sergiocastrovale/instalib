@@ -19,11 +19,11 @@
       <CardContent class="grid grid-cols-2 gap-4 pt-6 sm:grid-cols-4">
         <div class="rounded-lg border p-3 text-center">
           <p class="text-2xl font-semibold">{{ counts.pending }}</p>
-          <p class="text-xs text-muted-foreground">Pending</p>
+          <p class="text-xs text-muted-foreground">Web</p>
         </div>
         <div class="rounded-lg border p-3 text-center">
           <p class="text-2xl font-semibold text-emerald-500">{{ counts.downloaded }}</p>
-          <p class="text-xs text-muted-foreground">Offline</p>
+          <p class="text-xs text-muted-foreground">Downloaded</p>
         </div>
         <div class="rounded-lg border p-3 text-center">
           <p class="text-2xl font-semibold text-destructive">{{ counts.failed }}</p>
