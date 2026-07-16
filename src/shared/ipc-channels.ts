@@ -6,6 +6,7 @@ export const IPC = {
   collectionsList: 'collections:list',
   collectionsDelete: 'collections:delete',
   collectionsPatch: 'collections:patch',
+  collectionsDownloadedCounts: 'collections:downloadedCounts',
   importZip: 'import:zip',
   playerResolve: 'player:resolve',
   syncStart: 'sync:start',

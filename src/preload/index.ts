@@ -32,6 +32,8 @@ const api = {
     ipcRenderer.invoke(IPC.collectionsDelete, id),
   collectionsPatch: (id: string, patch: { syncEnabled?: boolean }): Promise<void> =>
     ipcRenderer.invoke(IPC.collectionsPatch, id, patch),
+  collectionsDownloadedCounts: (): Promise<Record<string, number>> =>
+    ipcRenderer.invoke(IPC.collectionsDownloadedCounts),
 
   importZip: (filePath: string): Promise<ImportResult> => ipcRenderer.invoke(IPC.importZip, filePath),
 

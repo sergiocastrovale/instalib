@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell } from 'electro
 import { IPC } from '@shared/ipc-channels'
 import type { Settings, VideoListQuery, VideoPatch, SyncEvent, SetupProgressEvent, PurgeOptions } from '@shared/types'
 import { listVideos, getVideo, patchVideo, resetToPending } from '../db/videos'
-import { listCollections, patchCollection } from '../db/collections'
+import { listCollections, patchCollection, getDownloadedCounts } from '../db/collections'
 import { getSettings, setSettings } from '../db/settings'
 import { getDbInfo } from '../db'
 import { importFromPath } from '../services/importer'
@@ -42,6 +42,7 @@ export function registerAllIpc(mainWindow: BrowserWindow): void {
   ipcMain.handle(IPC.collectionsPatch, (_e, id: string, patch: { syncEnabled?: boolean }) =>
     patchCollection(id, patch)
   )
+  ipcMain.handle(IPC.collectionsDownloadedCounts, () => getDownloadedCounts())
 
   ipcMain.handle(IPC.importZip, (_e, filePath: string) => importFromPath(filePath))
 

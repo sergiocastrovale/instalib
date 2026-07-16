@@ -98,6 +98,19 @@ export function patchCollection(id: string, patch: { syncEnabled?: boolean }): v
     .run(patch.syncEnabled ? 1 : 0, id)
 }
 
+export function getDownloadedCounts(): Record<string, number> {
+  const rows = getDb()
+    .prepare(
+      `SELECT cv.collection_id AS collectionId, COUNT(*) AS cnt
+       FROM collection_videos cv
+       JOIN videos v ON v.id = cv.video_id
+       WHERE v.status = 'downloaded'
+       GROUP BY cv.collection_id`
+    )
+    .all() as { collectionId: string; cnt: number }[]
+  return Object.fromEntries(rows.map((r) => [r.collectionId, r.cnt]))
+}
+
 export function getSyncScopeWhere(syncUncategorized: boolean): string {
   return syncUncategorized
     ? `(EXISTS (SELECT 1 FROM collection_videos cv JOIN collections c ON c.id = cv.collection_id

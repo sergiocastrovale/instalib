@@ -46,6 +46,8 @@
           mode="select"
           :collections="collections"
           :all-saved-count="allSavedCount"
+          :all-saved-downloaded-count="counts.downloaded"
+          :downloaded-counts="downloadedCounts"
           :selected-ids="selectedIds"
           :all-selected="allSelected"
           @update:selected-ids="onSelectedIds"
@@ -85,6 +87,7 @@ import type { CollectionDto, Settings, VideoDto } from '@shared/types'
 const sync = useSyncProgress()
 
 const collections = ref<CollectionDto[]>([])
+const downloadedCounts = ref<Record<string, number>>({})
 const settings = ref<Settings | null>(null)
 const failedVideos = ref<VideoDto[]>([])
 const pendingCount = ref(0)
@@ -93,7 +96,7 @@ const skippedCount = ref(0)
 
 const allSavedCount = computed(() => collections.value.reduce((sum, c) => sum + c.videoCount, 0))
 const selectedIds = ref<string[]>([])
-const allSelected = ref(true)
+const allSelected = ref(false)
 
 const counts = computed(() => ({
   pending: pendingCount.value,
@@ -116,8 +119,9 @@ async function refreshCounts(): Promise<void> {
 }
 
 async function refreshCollections(): Promise<void> {
-  collections.value = await window.api.collectionsList()
-  selectedIds.value = collections.value.filter((c) => c.syncEnabled).map((c) => c.id)
+  const [list, dlCounts] = await Promise.all([window.api.collectionsList(), window.api.collectionsDownloadedCounts()])
+  collections.value = list
+  downloadedCounts.value = dlCounts
 }
 
 async function refreshAll(): Promise<void> {
@@ -126,7 +130,6 @@ async function refreshAll(): Promise<void> {
 
 onMounted(async () => {
   settings.value = await window.api.settingsGet()
-  allSelected.value = settings.value.syncUncategorized
   await refreshAll()
 })
 

@@ -10,7 +10,8 @@
       <div
         :class="cn(
           'relative flex aspect-video items-center justify-center overflow-hidden rounded-lg border bg-muted',
-          mode === 'select' && allState === true && 'ring-2 ring-primary ring-offset-2 ring-offset-background'
+          mode === 'select' && allState === true && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
+          allSavedFullyDownloaded && 'ring-2 ring-emerald-500 ring-offset-2 ring-offset-background'
         )"
       >
         <img
@@ -25,7 +26,10 @@
         </div>
       </div>
       <p class="mt-1.5 text-[15.6px] font-medium">All saved</p>
-      <p class="font-mono text-[13.2px] text-muted-foreground">{{ allSavedCount ?? 0 }} videos</p>
+      <p class="font-mono text-[13.2px] text-muted-foreground">
+        {{ allSavedCount ?? 0 }} videos
+        <template v-if="mode === 'select'">/ {{ allSavedDownloadedCount ?? 0 }} downloaded</template>
+      </p>
     </component>
 
     <CollectionCard
@@ -40,6 +44,7 @@
       :collection="c"
       :mode="mode"
       :selected="selectedSet.has(c.id)"
+      :downloaded-count="downloadedCounts[c.id] ?? 0"
       @update:selected="(v) => toggleOne(c.id, v)"
     />
   </div>
@@ -62,6 +67,8 @@ const props = withDefaults(
     favoritesCount?: number
     allSavedCoverVideoId?: string | null
     favoritesCoverVideoId?: string | null
+    allSavedDownloadedCount?: number
+    downloadedCounts?: Record<string, number>
     selectedIds?: string[]
     allSelected?: boolean
   }>(),
@@ -71,6 +78,8 @@ const props = withDefaults(
     favoritesCount: 0,
     allSavedCoverVideoId: null,
     favoritesCoverVideoId: null,
+    allSavedDownloadedCount: 0,
+    downloadedCounts: () => ({}),
     selectedIds: () => [],
     allSelected: false
   }
@@ -90,8 +99,18 @@ const favoritesCollection = computed<CollectionDto>(() => ({
 
 const selectedSet = computed(() => new Set(props.selectedIds))
 
-const allCollectionsSelected = computed(
-  () => props.collections.length > 0 && props.collections.every((c) => selectedSet.value.has(c.id))
+function isFullyDownloaded(c: CollectionDto): boolean {
+  return c.videoCount > 0 && (props.downloadedCounts[c.id] ?? 0) >= c.videoCount
+}
+
+const allSavedFullyDownloaded = computed(
+  () => (props.allSavedCount ?? 0) > 0 && (props.allSavedDownloadedCount ?? 0) >= (props.allSavedCount ?? 0)
+)
+
+const eligibleCollections = computed(() => props.collections.filter((c) => !isFullyDownloaded(c)))
+
+const allCollectionsSelected = computed(() =>
+  eligibleCollections.value.length === 0 ? true : eligibleCollections.value.every((c) => selectedSet.value.has(c.id))
 )
 const allState = computed<boolean | 'indeterminate'>(() => {
   const fullyOn = allCollectionsSelected.value && props.allSelected
@@ -115,7 +134,7 @@ function toggleAll(): void {
   } else {
     emit(
       'update:selectedIds',
-      props.collections.map((c) => c.id)
+      eligibleCollections.value.map((c) => c.id)
     )
     emit('update:allSelected', true)
   }
