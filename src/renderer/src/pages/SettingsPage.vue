@@ -5,53 +5,15 @@
     <Tabs default-value="downloads">
       <TabsList>
         <TabsTrigger value="downloads">Downloads</TabsTrigger>
-        <TabsTrigger value="general">General</TabsTrigger>
-        <TabsTrigger value="instagram">Instagram</TabsTrigger>
+        <TabsTrigger value="setup">Setup</TabsTrigger>
         <TabsTrigger value="data">Data</TabsTrigger>
       </TabsList>
 
       <TabsContent value="downloads" class="flex flex-col gap-6">
         <DownloadsSettings />
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Sync folder</CardTitle>
-            <CardDescription>Where synced videos are saved. Defaults to your OS Videos folder.</CardDescription>
-          </CardHeader>
-          <CardContent class="flex items-center gap-2">
-            <Input :model-value="settings?.syncFolder ?? ''" readonly class="flex-1" />
-            <Button variant="outline" @click="pickFolder">Change…</Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Covers</CardTitle>
-            <CardDescription>Thumbnail images fetched in the background for saved videos.</CardDescription>
-          </CardHeader>
-          <CardContent class="space-y-1">
-            <p class="flex items-center gap-2 text-sm">
-              <Loader2Icon v-if="coverStatus?.running" class="size-3.5 animate-spin text-muted-foreground" />
-              {{ coverStatusText }}
-            </p>
-          </CardContent>
-        </Card>
       </TabsContent>
 
-      <TabsContent value="general" class="flex flex-col gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Appearance</CardTitle>
-            <CardDescription>Switch between light and dark mode.</CardDescription>
-          </CardHeader>
-          <CardContent class="flex items-center gap-2">
-            <Switch :model-value="settings?.theme === 'dark'" @update:model-value="onThemeChange" />
-            <Label>Dark mode</Label>
-          </CardContent>
-        </Card>
-      </TabsContent>
-
-      <TabsContent value="instagram" class="flex flex-col gap-6">
+      <TabsContent value="setup" class="flex flex-col gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Instagram cookies</CardTitle>
@@ -80,7 +42,7 @@
           </CardHeader>
           <CardContent class="flex items-center justify-between">
             <span class="text-sm text-muted-foreground">
-              Version: {{ settings?.ytDlpVersion ?? 'unknown' }}
+              Version: <span class="font-mono">{{ toolStatus?.ytDlpVersion ?? 'unknown' }}</span>
             </span>
             <Button variant="outline" :disabled="updating" @click="updateYtDlp">
               <Loader2Icon v-if="updating" class="size-4 animate-spin" />
@@ -88,16 +50,25 @@
             </Button>
           </CardContent>
         </Card>
-      </TabsContent>
 
-      <TabsContent value="data" class="flex flex-col gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Sync folder</CardTitle>
+            <CardDescription>Where synced videos are saved. Defaults to your OS Videos folder.</CardDescription>
+          </CardHeader>
+          <CardContent class="flex items-center gap-2">
+            <Input :model-value="settings?.syncFolder ?? ''" readonly class="flex-1 bg-secondary font-mono text-xs" />
+            <Button variant="outline" @click="pickFolder">Change…</Button>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
               Data location
               <span
                 class="rounded-full px-2 py-0.5 text-xs font-medium"
-                :class="dataLocation?.portable ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-sky-500/15 text-sky-600 dark:text-sky-400'"
+                :class="dataLocation?.portable ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-primary/15 text-primary'"
               >
                 {{ dataLocation?.portable ? 'Portable' : 'Installed' }}
               </span>
@@ -110,8 +81,54 @@
               }}
             </CardDescription>
           </CardHeader>
+          <CardContent class="space-y-3">
+            <Input :model-value="dataLocation?.path ?? ''" readonly class="bg-secondary font-mono text-xs" />
+            <div class="space-y-1.5 text-sm">
+              <div class="flex items-center gap-2">
+                <CheckIcon class="size-4 text-emerald-500" />
+                <span>Database</span>
+                <span v-if="dbInfo" class="font-mono text-xs text-muted-foreground">
+                  {{ dbInfo.engine }} · SQLite {{ dbInfo.sqliteVersion }} · schema v{{ dbInfo.schemaVersion }}
+                </span>
+              </div>
+              <div class="flex items-center gap-2">
+                <CheckIcon v-if="toolStatus?.ytDlp" class="size-4 text-emerald-500" />
+                <XIcon v-else class="size-4 text-destructive" />
+                <span>yt-dlp</span>
+                <span v-if="toolStatus?.ytDlpVersion" class="font-mono text-xs text-muted-foreground">{{ toolStatus.ytDlpVersion }}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <CheckIcon v-if="toolStatus?.ffmpeg" class="size-4 text-emerald-500" />
+                <XIcon v-else class="size-4 text-destructive" />
+                <span>ffmpeg</span>
+                <span v-if="toolStatus?.ffmpegVersion" class="font-mono text-xs text-muted-foreground">{{ toolStatus.ffmpegVersion }}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="data" class="flex flex-col gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Import more</CardTitle>
+            <CardDescription>Upload a fresh export .zip — already-saved videos are updated, not duplicated.</CardDescription>
+          </CardHeader>
           <CardContent>
-            <Input :model-value="dataLocation?.path ?? ''" readonly class="font-mono text-xs" />
+            <ImportDropzone @imported="lib.refresh" />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Covers</CardTitle>
+            <CardDescription>Thumbnail images fetched in the background for saved videos.</CardDescription>
+          </CardHeader>
+          <CardContent class="space-y-1">
+            <p class="flex items-center gap-2 text-sm">
+              <Loader2Icon v-if="coverStatus?.running" class="size-3.5 animate-spin text-muted-foreground" />
+              {{ coverStatusText }}
+            </p>
           </CardContent>
         </Card>
 
@@ -162,7 +179,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { Loader2Icon, TriangleAlertIcon } from '@lucide/vue'
+import { CheckIcon, Loader2Icon, TriangleAlertIcon, XIcon } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -173,12 +190,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import DownloadsSettings from '@/components/settings/DownloadsSettings.vue'
-import { applyTheme } from '@/lib/theme'
-import type { BrowserOption, CoverFetchStatus, DataLocation, Settings } from '@shared/types'
+import ImportDropzone from '@/components/ImportDropzone.vue'
+import { useLibraryStore } from '@/stores/library'
+import type { BrowserOption, CoverFetchStatus, DataLocation, DbInfo, Settings, SetupStatus } from '@shared/types'
 
+const lib = useLibraryStore()
 const settings = ref<Settings | null>(null)
 const browsers = ref<BrowserOption[]>([])
 const dataLocation = ref<DataLocation | null>(null)
+const toolStatus = ref<SetupStatus | null>(null)
+const dbInfo = ref<DbInfo | null>(null)
 const updating = ref(false)
 const coverStatus = ref<CoverFetchStatus | null>(null)
 let coverStatusTimer: ReturnType<typeof setInterval> | null = null
@@ -188,14 +209,18 @@ const removeCovers = ref(true)
 const purging = ref(false)
 
 async function load(): Promise<void> {
-  const [s, b, d] = await Promise.all([
+  const [s, b, d, t, db] = await Promise.all([
     window.api.settingsGet(),
     window.api.settingsDetectBrowsers(),
-    window.api.settingsDataLocation()
+    window.api.settingsDataLocation(),
+    window.api.setupStatus(),
+    window.api.dbInfo()
   ])
   settings.value = s
   browsers.value = b
+  toolStatus.value = t
   dataLocation.value = d
+  dbInfo.value = db
 }
 
 async function refreshCoverStatus(): Promise<void> {
@@ -233,12 +258,6 @@ async function pickFolder(): Promise<void> {
 
 async function onBrowserChange(value: unknown): Promise<void> {
   settings.value = await window.api.settingsSet({ cookiesBrowser: value as string })
-}
-
-async function onThemeChange(value: unknown): Promise<void> {
-  const theme = value === true ? 'dark' : 'light'
-  applyTheme(theme)
-  settings.value = await window.api.settingsSet({ theme })
 }
 
 async function confirmPurge(): Promise<void> {

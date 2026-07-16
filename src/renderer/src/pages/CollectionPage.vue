@@ -1,9 +1,11 @@
 <template>
   <div class="flex flex-col gap-4">
+    <Breadcrumbs :items="breadcrumbItems" />
+
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-2xl font-semibold">{{ title }}</h1>
-        <p class="text-muted-foreground">{{ filtered.length }} video{{ filtered.length === 1 ? '' : 's' }}</p>
+        <h1 class="text-[31.2px] font-bold tracking-[-0.02em]">{{ title }}</h1>
+        <p class="text-[15.6px] text-muted-foreground">{{ filtered.length }} video{{ filtered.length === 1 ? '' : 's' }}</p>
       </div>
       <div class="flex items-center gap-2">
         <Button :disabled="!filtered.length" @click="playAll(false)">
@@ -28,17 +30,17 @@
     <div class="flex flex-wrap items-center gap-3">
       <div class="relative max-w-xs flex-1">
         <SearchIcon class="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-        <Input v-model="search.collectionFilter" placeholder="Filter this collection…" class="pl-8" />
+        <Input v-model="search.collectionFilter" placeholder="Filter this collection…" class="h-[38px] pl-8" />
       </div>
       <Select v-model="authorFilter">
-        <SelectTrigger class="w-44"><SelectValue placeholder="All authors" /></SelectTrigger>
+        <SelectTrigger class="h-[38px] w-44"><SelectValue placeholder="All authors" /></SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All authors</SelectItem>
           <SelectItem v-for="a in authors" :key="a" :value="a">{{ a }}</SelectItem>
         </SelectContent>
       </Select>
       <Select v-model="sortBy">
-        <SelectTrigger class="w-44"><SelectValue /></SelectTrigger>
+        <SelectTrigger class="h-[38px] w-44"><SelectValue /></SelectTrigger>
         <SelectContent>
           <SelectItem value="savedAt_desc">Newest saved</SelectItem>
           <SelectItem value="savedAt_asc">Oldest saved</SelectItem>
@@ -51,7 +53,7 @@
     </div>
     <div v-else-if="!filtered.length" class="py-16 text-center text-muted-foreground">No videos match.</div>
     <div v-else class="flex flex-col gap-1">
-      <VideoRow v-for="v in filtered" :key="v.id" :video="v" :list-id="routeListId" />
+      <VideoRow v-for="v in filtered" :key="v.id" :video="v" :list-id="routeListId" :from="fromOrigin" />
     </div>
 
     <Dialog v-model:open="showRemoveCollectionConfirm">
@@ -87,14 +89,23 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import VideoRow from '@/components/VideoRow.vue'
+import Breadcrumbs, { type BreadcrumbItem } from '@/components/Breadcrumbs.vue'
 import { shuffleArray, useQueue } from '@/composables/useQueue'
 import { useSearchStore } from '@/stores/search'
+import { useLibraryStore } from '@/stores/library'
 import { router } from '@/router'
 import type { CollectionDto, VideoDto } from '@shared/types'
 
 const route = useRoute()
 const routeListId = computed(() => route.params.id as string)
 const search = useSearchStore()
+const lib = useLibraryStore()
+
+const fromOrigin = computed<string | undefined>(() => (route.query.from === 'search' ? 'search' : undefined))
+const breadcrumbItems = computed<BreadcrumbItem[]>(() => [
+  { label: fromOrigin.value === 'search' ? 'Search' : 'Home', to: '/' },
+  { label: title.value }
+])
 
 const videos = ref<VideoDto[]>([])
 const collections = ref<CollectionDto[]>([])
@@ -134,6 +145,7 @@ async function doRemoveCollection(): Promise<void> {
     await window.api.collectionsDelete(currentCollection.value.id)
     showRemoveCollectionConfirm.value = false
     toast.success('Collection removed')
+    await lib.refresh()
     await router.push('/')
   } catch {
     toast.error('Failed to remove collection')
@@ -168,6 +180,7 @@ async function playAll(shuffle: boolean): Promise<void> {
   const ordered = shuffle ? shuffleArray(ids) : ids
   queue.shuffleOn.value = shuffle
   queue.setQueue(routeListId.value, ordered)
-  await router.push(`/watch/${ordered[0]}?list=${routeListId.value}`)
+  const fromQs = fromOrigin.value ? `&from=${fromOrigin.value}` : ''
+  await router.push(`/watch/${ordered[0]}?list=${routeListId.value}${fromQs}`)
 }
 </script>

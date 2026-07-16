@@ -19,6 +19,7 @@ export const IPC = {
   settingsDetectBrowsers: 'settings:detectBrowsers',
   settingsDataLocation: 'settings:dataLocation',
   dbPurge: 'db:purge',
+  dbInfo: 'db:info',
   setupStatus: 'setup:status',
   setupInstall: 'setup:install',
   setupUpdateYtDlp: 'setup:updateYtDlp',

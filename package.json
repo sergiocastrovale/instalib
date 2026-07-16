@@ -23,6 +23,8 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^4.0.0",
+    "@fontsource/geist-mono": "^5.2.8",
+    "@fontsource/geist-sans": "^5.2.5",
     "@lucide/vue": "^1.24.0",
     "@tailwindcss/vite": "^4.3.2",
     "adm-zip": "^0.6.0",

@@ -6,6 +6,15 @@
         <p class="text-muted-foreground">
           Videos play from the web by default. Sync downloads them locally via yt-dlp for offline playback.
         </p>
+        <div class="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <span><span class="font-mono font-semibold text-foreground">{{ counts.pending }}</span> Web</span>
+          <span>·</span>
+          <span><span class="font-mono font-semibold text-emerald-500">{{ counts.downloaded }}</span> Downloaded</span>
+          <span>·</span>
+          <span><span class="font-mono font-semibold text-destructive">{{ counts.failed }}</span> Failed</span>
+          <span>·</span>
+          <span><span class="font-mono font-semibold text-muted-foreground">{{ counts.skipped }}</span> Skipped</span>
+        </div>
       </div>
       <Button v-if="!sync.state.running" :disabled="counts.pending === 0" @click="start">
         <PlayIcon class="size-4" /> Start sync
@@ -14,27 +23,6 @@
         <SquareIcon class="size-4" /> Stop
       </Button>
     </div>
-
-    <Card>
-      <CardContent class="grid grid-cols-2 gap-4 pt-6 sm:grid-cols-4">
-        <div class="rounded-lg border p-3 text-center">
-          <p class="text-2xl font-semibold">{{ counts.pending }}</p>
-          <p class="text-xs text-muted-foreground">Web</p>
-        </div>
-        <div class="rounded-lg border p-3 text-center">
-          <p class="text-2xl font-semibold text-emerald-500">{{ counts.downloaded }}</p>
-          <p class="text-xs text-muted-foreground">Downloaded</p>
-        </div>
-        <div class="rounded-lg border p-3 text-center">
-          <p class="text-2xl font-semibold text-destructive">{{ counts.failed }}</p>
-          <p class="text-xs text-muted-foreground">Failed</p>
-        </div>
-        <div class="rounded-lg border p-3 text-center">
-          <p class="text-2xl font-semibold text-muted-foreground">{{ counts.skipped }}</p>
-          <p class="text-xs text-muted-foreground">Skipped</p>
-        </div>
-      </CardContent>
-    </Card>
 
     <Card v-if="sync.state.running">
       <CardHeader>
@@ -81,16 +69,6 @@
         </div>
       </CardContent>
     </Card>
-
-    <Card>
-      <CardHeader>
-        <CardTitle>Import more</CardTitle>
-        <CardDescription>Upload a fresh export .zip — already-saved videos are updated, not duplicated.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ImportDropzone @imported="refreshAll" />
-      </CardContent>
-    </Card>
   </div>
 </template>
 
@@ -101,7 +79,6 @@ import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import CollectionGrid from '@/components/CollectionGrid.vue'
-import ImportDropzone from '@/components/ImportDropzone.vue'
 import { useSyncProgress } from '@/composables/useSyncProgress'
 import type { CollectionDto, Settings, VideoDto } from '@shared/types'
 

@@ -14,3 +14,13 @@ export function getDb(): Database.Database {
   runMigrations(db)
   return db
 }
+
+export function getDbInfo(): { engine: string; sqliteVersion: string; schemaVersion: number } {
+  const database = getDb()
+  const { v } = database.prepare('select sqlite_version() as v').get() as { v: string }
+  return {
+    engine: 'better-sqlite3',
+    sqliteVersion: v,
+    schemaVersion: database.pragma('user_version', { simple: true }) as number
+  }
+}

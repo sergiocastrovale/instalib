@@ -80,6 +80,7 @@ export interface SetupStatus {
   ytDlp: boolean
   ffmpeg: boolean
   ytDlpVersion: string | null
+  ffmpegVersion: string | null
 }
 
 export interface SyncStatus {
@@ -108,6 +109,12 @@ export interface VideoListQuery {
 export interface DataLocation {
   path: string
   portable: boolean
+}
+
+export interface DbInfo {
+  engine: string
+  sqliteVersion: string
+  schemaVersion: number
 }
 
 export interface PurgeOptions {

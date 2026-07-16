@@ -30,6 +30,6 @@ const icon = computed(() => {
 const classes = computed(() => {
   if (props.source === 'local') return 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
   if (props.source === 'embed') return 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-  return 'bg-sky-500/15 text-sky-600 dark:text-sky-400'
+  return 'bg-primary/15 text-primary'
 })
 </script>

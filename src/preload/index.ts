@@ -5,6 +5,7 @@ import type {
   BrowserOption,
   CoverFetchStatus,
   DataLocation,
+  DbInfo,
   ImportResult,
   PlaybackSource,
   CollectionDto,
@@ -61,6 +62,7 @@ const api = {
   settingsDataLocation: (): Promise<DataLocation> => ipcRenderer.invoke(IPC.settingsDataLocation),
 
   dbPurge: (opts: PurgeOptions): Promise<{ ok: true }> => ipcRenderer.invoke(IPC.dbPurge, opts),
+  dbInfo: (): Promise<DbInfo> => ipcRenderer.invoke(IPC.dbInfo),
 
   setupStatus: (): Promise<SetupStatus> => ipcRenderer.invoke(IPC.setupStatus),
   setupInstall: (): Promise<void> => ipcRenderer.invoke(IPC.setupInstall),

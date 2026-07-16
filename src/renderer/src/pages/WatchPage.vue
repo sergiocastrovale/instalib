@@ -9,17 +9,20 @@
       <Skeleton v-for="i in 5" :key="i" class="h-16 w-full rounded-lg" />
     </div>
   </div>
-  <div v-else class="grid grid-cols-1 gap-6" :class="player.state.focusMode ? '' : 'lg:grid-cols-[1fr_360px]'">
+  <div v-else class="flex flex-col gap-4">
+    <Breadcrumbs :items="breadcrumbItems" />
+
+    <div class="grid grid-cols-1 gap-6" :class="player.state.focusMode ? '' : 'lg:grid-cols-[1fr_360px]'">
     <div class="flex flex-col gap-4">
       <div ref="dockSlot" class="w-full overflow-hidden rounded-lg bg-black" />
 
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div class="min-w-0">
-          <h1 class="truncate text-lg font-semibold">{{ video.author ?? video.shortcode }}</h1>
+          <h1 class="truncate text-[22.8px] font-semibold">{{ video.author ?? video.shortcode }}</h1>
           <p class="text-sm text-muted-foreground">Saved {{ formatDate(video.savedAt) }}</p>
         </div>
         <div class="flex items-center gap-2">
-          <Button size="sm" variant="outline" :class="{ 'text-red-500': video.favorite }" @click="toggleFavorite">
+          <Button size="sm" variant="outline" :class="{ 'text-destructive': video.favorite }" @click="toggleFavorite">
             <HeartIcon class="size-4" :fill="video.favorite ? 'currentColor' : 'none'" /> {{ video.favorite ? 'Favorited' : 'Favorite' }}
           </Button>
           <Button size="sm" variant="outline" :class="{ 'text-primary': video.watched }" @click="toggleWatched">
@@ -54,17 +57,23 @@
           v-for="qv in queueVideos"
           :key="qv.id"
           class="flex cursor-pointer items-center gap-2 rounded-lg p-1.5 text-left hover:bg-accent"
-          :class="{ 'bg-accent': qv.id === video.id }"
+          :class="{ 'bg-primary/15': qv.id === video.id }"
           @click="playFromQueue(qv.id)"
         >
-          <div class="relative aspect-video w-24 shrink-0 overflow-hidden rounded border bg-muted">
+          <div class="relative aspect-video w-[104px] shrink-0 overflow-hidden rounded border bg-muted">
             <img v-if="qv.thumbPath" :src="`app-media://thumb/${qv.id}`" class="h-full w-full object-cover" loading="lazy" />
             <div v-else class="flex h-full items-center justify-center"><VideoIcon class="size-4 text-muted-foreground" /></div>
+            <div v-if="qv.id === video.id" class="absolute inset-0 flex items-center justify-center bg-black/20">
+              <PlayIcon class="size-5 fill-white text-white" />
+            </div>
           </div>
           <div class="min-w-0 flex-1">
-            <p class="truncate text-xs font-medium">{{ qv.author ?? qv.shortcode }}</p>
+            <p class="truncate text-xs font-medium" :class="{ 'text-primary': qv.id === video.id }">{{ qv.author ?? qv.shortcode }}</p>
             <p class="truncate text-xs text-muted-foreground">{{ formatDate(qv.savedAt) }}</p>
-            <p class="truncate text-xs text-muted-foreground">{{ qv.durationSec ? formatDuration(qv.durationSec) : '' }}</p>
+            <div class="flex items-center gap-1">
+              <CheckCircle2Icon v-if="qv.watched" class="size-3 text-emerald-500" />
+              <p class="truncate font-mono text-xs text-muted-foreground">{{ qv.durationSec ? formatDuration(qv.durationSec) : '' }}</p>
+            </div>
           </div>
         </button>
       </div>
@@ -88,6 +97,7 @@
         </div>
       </DialogContent>
     </Dialog>
+    </div>
   </div>
 </template>
 
@@ -99,6 +109,7 @@ import {
   ExternalLinkIcon,
   HeartIcon,
   KeyboardIcon,
+  PlayIcon,
   ShuffleIcon,
   VideoIcon
 } from '@lucide/vue'
@@ -110,17 +121,33 @@ import { shuffleArray, useQueue } from '@/composables/useQueue'
 import { usePlayer } from '@/composables/usePlayer'
 import { router } from '@/router'
 import NotesPanel from '@/components/NotesPanel.vue'
-import type { VideoDto } from '@shared/types'
+import Breadcrumbs, { type BreadcrumbItem } from '@/components/Breadcrumbs.vue'
+import type { CollectionDto, VideoDto } from '@shared/types'
 
 const route = useRoute()
 const videoId = computed(() => route.params.id as string)
 const listId = computed(() => (typeof route.query.list === 'string' ? route.query.list : 'all'))
+const fromOrigin = computed(() => (route.query.from === 'search' ? 'search' : 'home'))
 
 const video = ref<VideoDto | null>(null)
+const collections = ref<CollectionDto[]>([])
 
 async function loadVideoData(): Promise<void> {
   video.value = await window.api.videosGet(videoId.value)
 }
+
+const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
+  const rootLabel = fromOrigin.value === 'search' ? 'Search' : 'Home'
+  const items: BreadcrumbItem[] = [{ label: rootLabel, to: '/' }]
+  if (listId.value === 'favorites') {
+    items.push({ label: 'Favorites', to: '/collection/favorites' })
+  } else if (listId.value !== 'all') {
+    const name = collections.value.find((c) => c.id === listId.value)?.name ?? 'Collection'
+    items.push({ label: name, to: `/collection/${listId.value}` })
+  }
+  items.push({ label: video.value?.author ?? video.value?.shortcode ?? '' })
+  return items
+})
 
 const player = usePlayer()
 const queue = useQueue()
@@ -146,7 +173,7 @@ async function loadQueueVideos(): Promise<void> {
 }
 
 async function playFromQueue(id: string): Promise<void> {
-  await router.push(`/watch/${id}?list=${listId.value}`)
+  await router.push(`/watch/${id}?list=${listId.value}&from=${fromOrigin.value}`)
 }
 
 function shuffleQueue(): void {
@@ -199,6 +226,7 @@ watch(dockSlot, (el) => {
 
 onMounted(() => {
   window.addEventListener('keydown', onKeydown)
+  window.api.collectionsList().then((c) => (collections.value = c))
 })
 
 onUnmounted(() => {

@@ -4,6 +4,7 @@ import type { Settings, VideoListQuery, VideoPatch, SyncEvent, SetupProgressEven
 import { listVideos, getVideo, patchVideo, resetToPending } from '../db/videos'
 import { listCollections, patchCollection } from '../db/collections'
 import { getSettings, setSettings } from '../db/settings'
+import { getDbInfo } from '../db'
 import { importFromPath } from '../services/importer'
 import { resolvePlayback } from '../services/resolver'
 import { startSync, requestStop, getSyncStatus, setSyncEmitter, isSyncRunning } from '../services/downloader'
@@ -14,6 +15,7 @@ import {
   ensureBinaries,
   binariesReady,
   getYtDlpVersion,
+  getFfmpegVersion,
   updateYtDlp
 } from '../services/binaries'
 import { detectInstalledBrowsers } from '../services/cookies'
@@ -73,11 +75,12 @@ export function registerAllIpc(mainWindow: BrowserWindow): void {
   }))
 
   ipcMain.handle(IPC.dbPurge, (_e, opts: PurgeOptions) => purgeDatabase(opts))
+  ipcMain.handle(IPC.dbInfo, () => getDbInfo())
 
   ipcMain.handle(IPC.setupStatus, async () => {
     const ready = binariesReady()
-    const version = await getYtDlpVersion()
-    return { ytDlp: ready.ytDlp, ffmpeg: ready.ffmpeg, ytDlpVersion: version }
+    const [ytDlpVersion, ffmpegVersion] = await Promise.all([getYtDlpVersion(), getFfmpegVersion()])
+    return { ytDlp: ready.ytDlp, ffmpeg: ready.ffmpeg, ytDlpVersion, ffmpegVersion }
   })
   ipcMain.handle(IPC.setupInstall, async () => {
     await ensureBinaries((e: SetupProgressEvent) => {

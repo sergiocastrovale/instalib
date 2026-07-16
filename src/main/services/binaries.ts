@@ -149,6 +149,21 @@ export function getYtDlpVersion(): Promise<string | null> {
   })
 }
 
+export function getFfmpegVersion(): Promise<string | null> {
+  return new Promise((resolve) => {
+    if (!existsSync(ffmpegPath())) return resolve(null)
+    const proc = spawn(ffmpegPath(), ['-version'])
+    let out = ''
+    proc.stdout.on('data', (d: Buffer) => (out += d.toString()))
+    proc.on('close', () => {
+      const firstLine = out.split('\n')[0]?.trim() ?? ''
+      const match = firstLine.match(/version\s+(\S+)/)
+      resolve(match?.[1] ?? firstLine ?? null)
+    })
+    proc.on('error', () => resolve(null))
+  })
+}
+
 export function updateYtDlp(): Promise<{ code: number; output: string }> {
   return new Promise((resolve) => {
     if (!existsSync(ytDlpPath())) return resolve({ code: 1, output: 'yt-dlp not installed' })

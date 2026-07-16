@@ -1,6 +1,6 @@
 <template>
-  <RouterLink :to="href" class="group flex items-center gap-3 rounded-lg p-2 hover:bg-accent">
-    <div class="relative aspect-video w-32 shrink-0 overflow-hidden rounded border bg-muted sm:w-40">
+  <RouterLink :to="href" class="group flex items-center gap-3.5 rounded-lg p-2.5 hover:bg-accent">
+    <div class="relative aspect-video w-40 shrink-0 overflow-hidden rounded-md border bg-muted">
       <img
         v-if="video.thumbPath"
         :src="`app-media://thumb/${video.id}`"
@@ -10,7 +10,7 @@
       <div v-else class="flex h-full items-center justify-center">
         <VideoIcon class="size-6 text-muted-foreground" />
       </div>
-      <span v-if="video.durationSec" class="absolute bottom-1 right-1 rounded bg-black/80 px-1 py-0.5 text-[10px] font-medium text-white">
+      <span v-if="video.durationSec" class="absolute bottom-1 right-1 rounded bg-black/80 px-1 py-0.5 font-mono text-[12px] text-white">
         {{ formatDuration(video.durationSec) }}
       </span>
     </div>
@@ -22,7 +22,7 @@
     <div class="flex shrink-0 items-center gap-1.5">
       <SourceBadge :source="video.filePath ? 'local' : 'web'" />
       <CheckCircle2Icon v-if="video.watched" class="size-4 text-emerald-500" />
-      <HeartIcon v-if="video.favorite" class="size-4 text-red-500" fill="currentColor" />
+      <HeartIcon v-if="video.favorite" class="size-4 text-destructive" fill="currentColor" />
     </div>
   </RouterLink>
 </template>
@@ -34,7 +34,13 @@ import { formatDate, formatDuration } from '@/lib/format'
 import type { VideoDto } from '@shared/types'
 import SourceBadge from './SourceBadge.vue'
 
-const props = defineProps<{ video: VideoDto; listId?: string }>()
+const props = defineProps<{ video: VideoDto; listId?: string; from?: string }>()
 
-const href = computed(() => (props.listId ? `/watch/${props.video.id}?list=${props.listId}` : `/watch/${props.video.id}`))
+const href = computed(() => {
+  const params = new URLSearchParams()
+  if (props.listId) params.set('list', props.listId)
+  if (props.from) params.set('from', props.from)
+  const qs = params.toString()
+  return qs ? `/watch/${props.video.id}?${qs}` : `/watch/${props.video.id}`
+})
 </script>

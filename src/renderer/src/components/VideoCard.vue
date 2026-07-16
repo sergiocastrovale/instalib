@@ -10,11 +10,28 @@
       <div v-else class="flex h-full items-center justify-center">
         <VideoIcon class="size-8 text-muted-foreground" />
       </div>
-      <span v-if="video.durationSec" class="absolute bottom-1 right-1 rounded bg-black/80 px-1 py-0.5 text-[10px] font-medium text-white">
+      <div v-if="variant === 'resume'" class="absolute inset-0 flex items-center justify-center">
+        <div class="flex size-11 items-center justify-center rounded-full bg-black/45 backdrop-blur-sm">
+          <PlayIcon class="size-5 fill-white text-white" />
+        </div>
+      </div>
+      <span
+        v-if="variant === 'resume' && video.durationSec"
+        class="absolute right-1.5 top-1.5 rounded bg-black/60 px-1.5 py-0.5 font-mono text-[12.6px] text-white"
+      >
+        {{ formatDuration(video.positionSec) }} / {{ formatDuration(video.durationSec) }}
+      </span>
+      <span
+        v-else-if="video.durationSec"
+        class="absolute bottom-1 right-1 rounded bg-black/80 px-1 py-0.5 font-mono text-[12px] text-white"
+      >
         {{ formatDuration(video.durationSec) }}
       </span>
-      <div v-if="progressPct > 3" class="absolute inset-x-0 bottom-0 h-0.5 bg-white/30">
-        <div class="h-full bg-red-600" :style="{ width: progressPct + '%' }" />
+      <div
+        v-if="progressPct > 3"
+        :class="variant === 'resume' ? 'absolute inset-x-0 bottom-0 h-1 bg-white/30' : 'absolute inset-x-0 bottom-0 h-0.5 bg-white/30'"
+      >
+        <div class="h-full bg-primary" :style="{ width: progressPct + '%' }" />
       </div>
       <CheckCircle2Icon v-if="video.watched" class="absolute top-1.5 right-1.5 size-5 rounded-full bg-emerald-500/90 p-0.5 text-white" />
       <div class="absolute bottom-1 left-1">
@@ -28,14 +45,23 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { CheckCircle2Icon, VideoIcon } from '@lucide/vue'
+import { CheckCircle2Icon, PlayIcon, VideoIcon } from '@lucide/vue'
 import { formatDuration } from '@/lib/format'
 import type { VideoDto } from '@shared/types'
 import SourceBadge from './SourceBadge.vue'
 
-const props = defineProps<{ video: VideoDto; listId?: string }>()
+const props = withDefaults(
+  defineProps<{ video: VideoDto; listId?: string; variant?: 'default' | 'resume'; from?: string }>(),
+  { variant: 'default' }
+)
 
-const href = computed(() => (props.listId ? `/watch/${props.video.id}?list=${props.listId}` : `/watch/${props.video.id}`))
+const href = computed(() => {
+  const params = new URLSearchParams()
+  if (props.listId) params.set('list', props.listId)
+  if (props.from) params.set('from', props.from)
+  const qs = params.toString()
+  return qs ? `/watch/${props.video.id}?${qs}` : `/watch/${props.video.id}`
+})
 
 const progressPct = computed(() => {
   if (!props.video.durationSec) return 0

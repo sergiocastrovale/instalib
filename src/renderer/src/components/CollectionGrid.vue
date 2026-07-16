@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+  <div class="grid grid-cols-2 gap-[18px] sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
     <component
       :is="mode === 'navigate' ? RouterLink : 'button'"
       :to="mode === 'navigate' ? '/collection/all' : undefined"
@@ -20,15 +20,12 @@
           loading="lazy"
         />
         <LibraryBigIcon v-else class="size-8 text-muted-foreground" />
-        <div
-          v-if="mode === 'select'"
-          class="absolute left-1.5 top-1.5 rounded-md bg-background/80 p-0.5 shadow-sm backdrop-blur-sm"
-        >
-          <Checkbox :model-value="allState" tabindex="-1" class="pointer-events-none" />
+        <div v-if="mode === 'select'" class="absolute left-2 top-2">
+          <Checkbox :model-value="allState" tabindex="-1" class="pointer-events-none size-5" />
         </div>
       </div>
-      <p class="mt-1.5 text-sm font-medium">All saved</p>
-      <p class="text-xs text-muted-foreground">{{ allSavedCount ?? 0 }} videos</p>
+      <p class="mt-1.5 text-[15.6px] font-medium">All saved</p>
+      <p class="font-mono text-[13.2px] text-muted-foreground">{{ allSavedCount ?? 0 }} videos</p>
     </component>
 
     <CollectionCard

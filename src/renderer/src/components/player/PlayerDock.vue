@@ -59,7 +59,7 @@
           <XIcon class="size-4" />
         </Button>
         <div class="absolute inset-x-0 bottom-0 h-0.5 bg-white/20">
-          <div class="h-full bg-red-600" :style="{ width: playedPct + '%' }" />
+          <div class="h-full bg-primary" :style="{ width: playedPct + '%' }" />
         </div>
       </div>
 
@@ -97,7 +97,7 @@
             <SkipForwardIcon class="size-4" />
           </Button>
 
-          <span class="mx-1 whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+          <span class="mx-1 whitespace-nowrap font-mono text-xs text-muted-foreground">
             {{ formatDuration(state.currentTime) }} / {{ formatDuration(state.duration) }}
           </span>
 
@@ -119,21 +119,21 @@
 
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
-              <Button size="sm" variant="ghost" class="w-16 tabular-nums">{{ state.speed }}x</Button>
+              <Button size="sm" variant="outline" class="min-w-[52px] bg-secondary font-mono font-semibold">{{ state.speed }}x</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem v-for="s in speedOptions" :key="s" @click="setSpeed(s)">{{ s }}x</DropdownMenuItem>
               <DropdownMenuSeparator />
               <div class="flex items-center justify-between gap-2 px-2 py-1">
                 <Button size="icon" variant="outline" class="size-6" @click.stop="setSpeed(state.speed - 0.05)"><MinusIcon class="size-3" /></Button>
-                <span class="text-xs tabular-nums">{{ state.speed.toFixed(2) }}x</span>
+                <span class="font-mono text-xs">{{ state.speed.toFixed(2) }}x</span>
                 <Button size="icon" variant="outline" class="size-6" @click.stop="setSpeed(state.speed + 0.05)"><PlusIcon class="size-3" /></Button>
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button size="sm" variant="ghost" :class="{ 'text-primary': state.loopA !== null || state.loopB !== null }" @click="setLoopA" title="Set loop start (A)">A</Button>
-          <Button size="sm" variant="ghost" :class="{ 'text-primary': state.loopB !== null }" @click="setLoopB" title="Set loop end (B)">B</Button>
+          <Button size="sm" variant="outline" :class="{ 'border-primary bg-primary/15 text-primary': state.loopA !== null || state.loopB !== null }" @click="setLoopA" title="Set loop start (A)">A</Button>
+          <Button size="sm" variant="outline" :class="{ 'border-primary bg-primary/15 text-primary': state.loopB !== null }" @click="setLoopB" title="Set loop end (B)">B</Button>
           <Button v-if="state.loopA !== null || state.loopB !== null" size="icon" variant="ghost" @click="clearLoop" title="Clear loop">
             <RepeatIcon class="size-4 text-primary" />
           </Button>
