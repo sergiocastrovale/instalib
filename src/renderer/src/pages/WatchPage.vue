@@ -63,6 +63,7 @@
           </div>
           <div class="min-w-0 flex-1">
             <p class="truncate text-xs font-medium">{{ qv.author ?? qv.shortcode }}</p>
+            <p class="truncate text-xs text-muted-foreground">{{ formatDate(qv.savedAt) }}</p>
             <p class="truncate text-xs text-muted-foreground">{{ qv.durationSec ? formatDuration(qv.durationSec) : '' }}</p>
           </div>
         </button>

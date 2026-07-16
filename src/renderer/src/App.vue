@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-svh bg-background text-foreground">
+  <div class="flex h-svh flex-col overflow-hidden bg-background text-foreground">
     <div v-if="navigating" class="fixed inset-x-0 top-0 z-[60] h-0.5 overflow-hidden bg-primary/20">
       <div class="h-full w-1/3 animate-[loading-bar_1s_ease-in-out_infinite] bg-primary" />
     </div>
-    <div class="sticky top-0 z-50">
+    <div class="shrink-0">
       <TitleBar />
       <header v-if="route.name !== 'setup'" class="bg-background/95 backdrop-blur">
         <div class="mx-auto flex h-14 max-w-[1600px] items-center gap-6 px-4">
@@ -32,9 +32,11 @@
         </div>
       </header>
     </div>
-    <main :class="route.name === 'setup' ? '' : 'mx-auto max-w-[1600px] px-4 py-6'">
-      <RouterView />
-    </main>
+    <div class="flex-1 overflow-y-auto">
+      <main :class="route.name === 'setup' ? '' : 'mx-auto max-w-[1600px] px-4 py-6'">
+        <RouterView />
+      </main>
+    </div>
     <PlayerDock />
     <Toaster />
   </div>
