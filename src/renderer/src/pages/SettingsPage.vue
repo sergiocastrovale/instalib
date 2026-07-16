@@ -135,7 +135,7 @@
           <DialogTitle>Are you sure?</DialogTitle>
           <DialogDescription>
             This stops any download or cover fetch in progress and permanently deletes all saved videos,
-            playlists, and notes from the database. This cannot be undone.
+            collections, and notes from the database. This cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <div class="space-y-3">

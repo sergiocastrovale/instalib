@@ -46,17 +46,17 @@
       </CardContent>
     </Card>
 
-    <Card v-if="playlists.length">
+    <Card v-if="collections.length">
       <CardHeader>
         <CardTitle>Sync locally</CardTitle>
         <CardDescription>
-          Pick which playlists to download and keep on disk. Only selected playlists are fetched when you start a sync.
+          Pick which collections to download and keep on disk. Only selected collections are fetched when you start a sync.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <PlaylistGrid
+        <CollectionGrid
           mode="select"
-          :playlists="playlists"
+          :collections="collections"
           :all-saved-count="allSavedCount"
           :selected-ids="selectedIds"
           :all-selected="allSelected"
@@ -100,21 +100,21 @@ import { PlayIcon, SquareIcon } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import PlaylistGrid from '@/components/PlaylistGrid.vue'
+import CollectionGrid from '@/components/CollectionGrid.vue'
 import ImportDropzone from '@/components/ImportDropzone.vue'
 import { useSyncProgress } from '@/composables/useSyncProgress'
-import type { PlaylistDto, Settings, VideoDto } from '@shared/types'
+import type { CollectionDto, Settings, VideoDto } from '@shared/types'
 
 const sync = useSyncProgress()
 
-const playlists = ref<PlaylistDto[]>([])
+const collections = ref<CollectionDto[]>([])
 const settings = ref<Settings | null>(null)
 const failedVideos = ref<VideoDto[]>([])
 const pendingCount = ref(0)
 const downloadedCount = ref(0)
 const skippedCount = ref(0)
 
-const allSavedCount = computed(() => playlists.value.reduce((sum, p) => sum + p.videoCount, 0))
+const allSavedCount = computed(() => collections.value.reduce((sum, c) => sum + c.videoCount, 0))
 const selectedIds = ref<string[]>([])
 const allSelected = ref(true)
 
@@ -138,13 +138,13 @@ async function refreshCounts(): Promise<void> {
   failedVideos.value = failed
 }
 
-async function refreshPlaylists(): Promise<void> {
-  playlists.value = await window.api.playlistsList()
-  selectedIds.value = playlists.value.filter((p) => p.syncEnabled).map((p) => p.id)
+async function refreshCollections(): Promise<void> {
+  collections.value = await window.api.collectionsList()
+  selectedIds.value = collections.value.filter((c) => c.syncEnabled).map((c) => c.id)
 }
 
 async function refreshAll(): Promise<void> {
-  await Promise.all([refreshCounts(), refreshPlaylists()])
+  await Promise.all([refreshCounts(), refreshCollections()])
 }
 
 onMounted(async () => {
@@ -156,10 +156,10 @@ onMounted(async () => {
 async function onSelectedIds(ids: string[]): Promise<void> {
   const prev = new Set(selectedIds.value)
   const next = new Set(ids)
-  const changed = playlists.value.filter((p) => next.has(p.id) !== prev.has(p.id))
+  const changed = collections.value.filter((c) => next.has(c.id) !== prev.has(c.id))
   selectedIds.value = ids
-  await Promise.all(changed.map((p) => window.api.playlistsPatch(p.id, { syncEnabled: next.has(p.id) })))
-  await refreshPlaylists()
+  await Promise.all(changed.map((c) => window.api.collectionsPatch(c.id, { syncEnabled: next.has(c.id) })))
+  await refreshCollections()
 }
 
 async function onAllSelected(value: boolean): Promise<void> {

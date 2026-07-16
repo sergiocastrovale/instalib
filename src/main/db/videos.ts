@@ -56,9 +56,9 @@ export function listVideos(query: VideoListQuery): VideoDto[] {
   const params: Record<string, unknown> = {}
 
   let base = 'SELECT v.* FROM videos v'
-  if (query.playlistId) {
-    base += ' JOIN playlist_videos pv ON pv.video_id = v.id AND pv.playlist_id = @playlistId'
-    params.playlistId = query.playlistId
+  if (query.collectionId) {
+    base += ' JOIN collection_videos cv ON cv.video_id = v.id AND cv.collection_id = @collectionId'
+    params.collectionId = query.collectionId
   }
   if (query.favorites) {
     clauses.push('v.favorite = 1')
@@ -273,8 +273,8 @@ export function listAdoptableVideos(): AdoptableVideo[] {
 export function purgeAllVideoData(): void {
   const db = getDb()
   const run = db.transaction(() => {
-    db.prepare('DELETE FROM playlist_videos').run()
-    db.prepare('DELETE FROM playlists').run()
+    db.prepare('DELETE FROM collection_videos').run()
+    db.prepare('DELETE FROM collections').run()
     db.prepare('DELETE FROM videos').run()
   })
   run()

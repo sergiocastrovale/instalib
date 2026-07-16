@@ -1,6 +1,6 @@
 export type VideoStatus = 'pending' | 'downloading' | 'downloaded' | 'failed' | 'skipped'
 export type PlaybackSourceKind = 'local' | 'web' | 'embed'
-export type PlaylistKind = 'imported' | 'user'
+export type CollectionKind = 'imported' | 'user'
 
 export interface VideoDto {
   id: string
@@ -24,10 +24,10 @@ export interface VideoDto {
   updatedAt: number
 }
 
-export interface PlaylistDto {
+export interface CollectionDto {
   id: string
   name: string
-  kind: PlaylistKind
+  kind: CollectionKind
   syncEnabled: boolean
   videoCount: number
   coverVideoId: string | null
@@ -98,7 +98,7 @@ export interface CoverFetchStatus {
 }
 
 export interface VideoListQuery {
-  playlistId?: string
+  collectionId?: string
   favorites?: boolean
   search?: string
   status?: VideoStatus

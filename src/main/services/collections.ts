@@ -1,8 +1,8 @@
-import { deletePlaylistAndOrphanVideos } from '../db/playlists'
+import { deleteCollectionAndOrphanVideos } from '../db/collections'
 import { unlinkQuiet } from './purge'
 
-export async function deleteCollection(playlistId: string): Promise<{ ok: true }> {
-  const orphans = deletePlaylistAndOrphanVideos(playlistId)
+export async function deleteCollection(collectionId: string): Promise<{ ok: true }> {
+  const orphans = deleteCollectionAndOrphanVideos(collectionId)
 
   const deletions: Promise<void>[] = []
   for (const orphan of orphans) {

@@ -31,7 +31,7 @@ const MIGRATIONS: string[] = [
   CREATE INDEX idx_videos_saved_at ON videos(saved_at);
   CREATE INDEX idx_videos_favorite ON videos(favorite) WHERE favorite = 1;
 
-  CREATE TABLE playlists (
+  CREATE TABLE collections (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     kind TEXT NOT NULL DEFAULT 'imported',
@@ -40,12 +40,12 @@ const MIGRATIONS: string[] = [
     UNIQUE (name, kind)
   );
 
-  CREATE TABLE playlist_videos (
-    playlist_id TEXT NOT NULL REFERENCES playlists(id) ON DELETE CASCADE,
+  CREATE TABLE collection_videos (
+    collection_id TEXT NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
     video_id TEXT NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
     position INTEGER NOT NULL DEFAULT 0,
     added_at INTEGER NOT NULL,
-    PRIMARY KEY (playlist_id, video_id)
+    PRIMARY KEY (collection_id, video_id)
   );
 
   CREATE TABLE settings (

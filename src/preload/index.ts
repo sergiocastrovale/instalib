@@ -7,7 +7,7 @@ import type {
   DataLocation,
   ImportResult,
   PlaybackSource,
-  PlaylistDto,
+  CollectionDto,
   PurgeOptions,
   Settings,
   SetupProgressEvent,
@@ -26,18 +26,18 @@ const api = {
     ipcRenderer.invoke(IPC.videosPatch, id, patch),
   videosRetry: (id: string): Promise<void> => ipcRenderer.invoke(IPC.videosRetry, id),
 
-  playlistsList: (): Promise<PlaylistDto[]> => ipcRenderer.invoke(IPC.playlistsList),
-  playlistsDeleteCollection: (id: string): Promise<{ ok: true }> =>
-    ipcRenderer.invoke(IPC.playlistsDeleteCollection, id),
-  playlistsPatch: (id: string, patch: { syncEnabled?: boolean }): Promise<void> =>
-    ipcRenderer.invoke(IPC.playlistsPatch, id, patch),
+  collectionsList: (): Promise<CollectionDto[]> => ipcRenderer.invoke(IPC.collectionsList),
+  collectionsDelete: (id: string): Promise<{ ok: true }> =>
+    ipcRenderer.invoke(IPC.collectionsDelete, id),
+  collectionsPatch: (id: string, patch: { syncEnabled?: boolean }): Promise<void> =>
+    ipcRenderer.invoke(IPC.collectionsPatch, id, patch),
 
   importZip: (filePath: string): Promise<ImportResult> => ipcRenderer.invoke(IPC.importZip, filePath),
 
   playerResolve: (videoId: string, force?: boolean): Promise<PlaybackSource> =>
     ipcRenderer.invoke(IPC.playerResolve, videoId, force),
 
-  syncStart: (opts: { playlistId?: string }): Promise<void> => ipcRenderer.invoke(IPC.syncStart, opts),
+  syncStart: (opts: { collectionId?: string }): Promise<void> => ipcRenderer.invoke(IPC.syncStart, opts),
   syncStop: (): Promise<void> => ipcRenderer.invoke(IPC.syncStop),
   syncStatus: (): Promise<SyncStatus> => ipcRenderer.invoke(IPC.syncStatus),
   onSyncEvent: (cb: (e: SyncEvent) => void): (() => void) => {

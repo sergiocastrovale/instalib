@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import AdmZip from 'adm-zip'
 import { parseSavedCollections, parseSavedPosts } from './instagram'
 import { upsertVideo } from '../db/videos'
-import { upsertImportedPlaylist, addVideoToPlaylist } from '../db/playlists'
+import { upsertImportedCollection, addVideoToCollection } from '../db/collections'
 import { getDb } from '../db/index'
 import { startCoverFetch, isCoverFetchRunning } from './covers'
 import { adoptExistingFiles } from './adopt'
@@ -63,14 +63,14 @@ export async function importFromPath(filePath: string): Promise<ImportResult> {
     let collectionsLinked = 0
     for (const col of collections) {
       if (col.shortcodes.length === 0) continue
-      const playlistId = upsertImportedPlaylist(col.name)
+      const collectionId = upsertImportedCollection(col.name)
       let linkedAny = false
       for (const sc of col.shortcodes) {
         const videoId =
           shortcodeToId.get(sc) ??
           (db.prepare('SELECT id FROM videos WHERE shortcode = ?').get(sc) as { id: string } | undefined)?.id
         if (!videoId) continue
-        addVideoToPlaylist(playlistId, videoId)
+        addVideoToCollection(collectionId, videoId)
         linkedAny = true
       }
       if (linkedAny) collectionsLinked++

@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell } from 'electro
 import { IPC } from '@shared/ipc-channels'
 import type { Settings, VideoListQuery, VideoPatch, SyncEvent, SetupProgressEvent, PurgeOptions } from '@shared/types'
 import { listVideos, getVideo, patchVideo, resetToPending } from '../db/videos'
-import { listPlaylists, patchPlaylist } from '../db/playlists'
+import { listCollections, patchCollection } from '../db/collections'
 import { getSettings, setSettings } from '../db/settings'
 import { importFromPath } from '../services/importer'
 import { resolvePlayback } from '../services/resolver'
@@ -35,10 +35,10 @@ export function registerAllIpc(mainWindow: BrowserWindow): void {
   ipcMain.handle(IPC.videosPatch, (_e, id: string, patch: VideoPatch) => patchVideo(id, patch))
   ipcMain.handle(IPC.videosRetry, (_e, id: string) => resetToPending(id))
 
-  ipcMain.handle(IPC.playlistsList, () => listPlaylists())
-  ipcMain.handle(IPC.playlistsDeleteCollection, (_e, id: string) => deleteCollection(id))
-  ipcMain.handle(IPC.playlistsPatch, (_e, id: string, patch: { syncEnabled?: boolean }) =>
-    patchPlaylist(id, patch)
+  ipcMain.handle(IPC.collectionsList, () => listCollections())
+  ipcMain.handle(IPC.collectionsDelete, (_e, id: string) => deleteCollection(id))
+  ipcMain.handle(IPC.collectionsPatch, (_e, id: string, patch: { syncEnabled?: boolean }) =>
+    patchCollection(id, patch)
   )
 
   ipcMain.handle(IPC.importZip, (_e, filePath: string) => importFromPath(filePath))

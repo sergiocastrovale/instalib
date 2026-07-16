@@ -53,8 +53,8 @@ export function useSyncProgress() {
     unsubscribe?.()
   })
 
-  async function start(playlistId?: string): Promise<void> {
-    await window.api.syncStart({ playlistId })
+  async function start(collectionId?: string): Promise<void> {
+    await window.api.syncStart({ collectionId })
     await refresh()
   }
 

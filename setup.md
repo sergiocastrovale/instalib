@@ -28,7 +28,7 @@ progress screen. When it's done, you're in.
 ## 4. Import your videos
 
 Drag the `.zip` file from Step 1 onto the Instalib window (or click to choose it).
-Your saved videos appear, organized into playlists matching your Instagram collections.
+Your saved videos appear, organized into collections matching your Instagram saved collections.
 
 You can do this again later with a fresh export - Instalib updates what's changed
 without creating duplicates.
@@ -59,7 +59,7 @@ your computer automatically - you'll see an "Offline" badge on it.
 ## 8. Organize
 
 - **Favorites** - click the heart on any video.
-- **Playlists** - create your own from the Library page, or add a video to one
+- **Collections** - create your own from the Library page, or add a video to one
   from the Watch page.
 - **Notes** - every video has a notes box. Great for jotting down what you
   learned, timestamps, or reminders.

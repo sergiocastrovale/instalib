@@ -1,7 +1,7 @@
 <template>
   <component
     :is="mode === 'navigate' ? RouterLink : 'button'"
-    :to="mode === 'navigate' ? `/playlist/${playlist.id}` : undefined"
+    :to="mode === 'navigate' ? `/collection/${collection.id}` : undefined"
     :type="mode === 'select' ? 'button' : undefined"
     class="group block w-full cursor-pointer text-left"
     @click="mode === 'select' ? emit('update:selected', !selected) : undefined"
@@ -13,12 +13,12 @@
       )"
     >
       <img
-        v-if="playlist.coverVideoId"
-        :src="`app-media://thumb/${playlist.coverVideoId}`"
+        v-if="collection.coverVideoId"
+        :src="`app-media://thumb/${collection.coverVideoId}`"
         class="h-full w-full object-cover transition group-hover:scale-105"
         loading="lazy"
       />
-      <HeartIcon v-else-if="playlist.id === 'favorites'" class="size-8 text-muted-foreground" />
+      <HeartIcon v-else-if="collection.id === 'favorites'" class="size-8 text-muted-foreground" />
       <FolderIcon v-else class="size-8 text-muted-foreground" />
 
       <div
@@ -28,8 +28,8 @@
         <Checkbox :model-value="selected" tabindex="-1" class="pointer-events-none" />
       </div>
     </div>
-    <p class="mt-1.5 truncate text-sm font-medium">{{ playlist.name }}</p>
-    <p class="text-xs text-muted-foreground">{{ playlist.videoCount }} videos</p>
+    <p class="mt-1.5 truncate text-sm font-medium">{{ collection.name }}</p>
+    <p class="text-xs text-muted-foreground">{{ collection.videoCount }} videos</p>
   </component>
 </template>
 
@@ -38,9 +38,9 @@ import { FolderIcon, HeartIcon } from '@lucide/vue'
 import { RouterLink } from 'vue-router'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
-import type { PlaylistDto } from '@shared/types'
+import type { CollectionDto } from '@shared/types'
 
-withDefaults(defineProps<{ playlist: PlaylistDto; mode?: 'navigate' | 'select'; selected?: boolean }>(), {
+withDefaults(defineProps<{ collection: CollectionDto; mode?: 'navigate' | 'select'; selected?: boolean }>(), {
   mode: 'navigate',
   selected: false
 })

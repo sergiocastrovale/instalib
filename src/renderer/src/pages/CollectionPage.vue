@@ -12,7 +12,7 @@
         <Button variant="outline" :disabled="!filtered.length" @click="playAll(true)">
           <ShuffleIcon class="size-4" /> Shuffle
         </Button>
-        <DropdownMenu v-if="currentPlaylist?.kind === 'imported'">
+        <DropdownMenu v-if="currentCollection?.kind === 'imported'">
           <DropdownMenuTrigger as-child>
             <Button size="icon" variant="ghost"><MoreVerticalIcon class="size-4" /></Button>
           </DropdownMenuTrigger>
@@ -28,7 +28,7 @@
     <div class="flex flex-wrap items-center gap-3">
       <div class="relative max-w-xs flex-1">
         <SearchIcon class="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-        <Input v-model="search.playlistFilter" placeholder="Filter this playlist…" class="pl-8" />
+        <Input v-model="search.collectionFilter" placeholder="Filter this collection…" class="pl-8" />
       </div>
       <Select v-model="authorFilter">
         <SelectTrigger class="w-44"><SelectValue placeholder="All authors" /></SelectTrigger>
@@ -90,48 +90,48 @@ import VideoRow from '@/components/VideoRow.vue'
 import { shuffleArray, useQueue } from '@/composables/useQueue'
 import { useSearchStore } from '@/stores/search'
 import { router } from '@/router'
-import type { PlaylistDto, VideoDto } from '@shared/types'
+import type { CollectionDto, VideoDto } from '@shared/types'
 
 const route = useRoute()
 const routeListId = computed(() => route.params.id as string)
 const search = useSearchStore()
 
 const videos = ref<VideoDto[]>([])
-const playlists = ref<PlaylistDto[]>([])
+const collections = ref<CollectionDto[]>([])
 const loading = ref(true)
 
 async function load(): Promise<void> {
   loading.value = true
   const id = routeListId.value
-  const query = id === 'all' ? {} : id === 'favorites' ? { favorites: true } : { playlistId: id }
-  const [v, p] = await Promise.all([window.api.videosList(query), window.api.playlistsList()])
+  const query = id === 'all' ? {} : id === 'favorites' ? { favorites: true } : { collectionId: id }
+  const [v, c] = await Promise.all([window.api.videosList(query), window.api.collectionsList()])
   videos.value = v
-  playlists.value = p
+  collections.value = c
   loading.value = false
 }
 
 onMounted(load)
 watch(routeListId, () => {
-  search.setPlaylistFilter('')
+  search.setCollectionFilter('')
   load()
 })
 
-const currentPlaylist = computed(() => playlists.value.find((p) => p.id === routeListId.value))
+const currentCollection = computed(() => collections.value.find((c) => c.id === routeListId.value))
 
 const title = computed(() => {
   if (routeListId.value === 'all') return 'All saved'
   if (routeListId.value === 'favorites') return 'Favorites'
-  return currentPlaylist.value?.name ?? 'Playlist'
+  return currentCollection.value?.name ?? 'Collection'
 })
 
 const showRemoveCollectionConfirm = ref(false)
 const removingCollection = ref(false)
 
 async function doRemoveCollection(): Promise<void> {
-  if (!currentPlaylist.value) return
+  if (!currentCollection.value) return
   removingCollection.value = true
   try {
-    await window.api.playlistsDeleteCollection(currentPlaylist.value.id)
+    await window.api.collectionsDelete(currentCollection.value.id)
     showRemoveCollectionConfirm.value = false
     toast.success('Collection removed')
     await router.push('/')
@@ -150,7 +150,7 @@ const authors = computed(() => [...new Set(videos.value.map((v) => v.author).fil
 const filtered = computed(() => {
   let list = videos.value
   if (authorFilter.value !== 'all') list = list.filter((v) => v.author === authorFilter.value)
-  const q = search.playlistFilter.trim().toLowerCase()
+  const q = search.collectionFilter.trim().toLowerCase()
   if (q) list = list.filter((v) => v.author?.toLowerCase().includes(q) || v.caption?.toLowerCase().includes(q))
   const [field, dir] = sortBy.value.split('_') as ['savedAt', 'asc' | 'desc']
   list = [...list].sort((a, b) => {

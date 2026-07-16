@@ -16,7 +16,7 @@
         <div v-if="collectionResults.length" class="mb-6">
           <h3 class="mb-2 text-sm font-semibold text-muted-foreground">Collections ({{ collectionResults.length }})</h3>
           <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-            <PlaylistCard v-for="p in collectionResults" :key="p.id" :playlist="p" />
+            <CollectionCard v-for="c in collectionResults" :key="c.id" :collection="c" />
           </div>
         </div>
 
@@ -52,10 +52,10 @@
 
       <section v-else>
         <div class="mb-3 flex items-center justify-between">
-          <h2 class="text-lg font-semibold">Playlists</h2>
+          <h2 class="text-lg font-semibold">Collections</h2>
         </div>
-        <PlaylistGrid
-          :playlists="playlists"
+        <CollectionGrid
+          :collections="collections"
           :all-saved-count="videos.length"
           :favorites-count="favoritesCount"
           :all-saved-cover-video-id="allSavedCoverVideoId"
@@ -75,22 +75,22 @@ import { computed, onMounted, ref } from 'vue'
 import { ClapperboardIcon } from '@lucide/vue'
 import { Skeleton } from '@/components/ui/skeleton'
 import VideoCard from '@/components/VideoCard.vue'
-import PlaylistCard from '@/components/PlaylistCard.vue'
-import PlaylistGrid from '@/components/PlaylistGrid.vue'
+import CollectionCard from '@/components/CollectionCard.vue'
+import CollectionGrid from '@/components/CollectionGrid.vue'
 import ImportDropzone from '@/components/ImportDropzone.vue'
 import { useSearchStore } from '@/stores/search'
-import type { PlaylistDto, VideoDto } from '@shared/types'
+import type { CollectionDto, VideoDto } from '@shared/types'
 
 const videos = ref<VideoDto[]>([])
-const playlists = ref<PlaylistDto[]>([])
+const collections = ref<CollectionDto[]>([])
 const loading = ref(true)
 const search = useSearchStore()
 
 async function loadAll(): Promise<void> {
   loading.value = true
-  const [v, p] = await Promise.all([window.api.videosList({}), window.api.playlistsList()])
+  const [v, c] = await Promise.all([window.api.videosList({}), window.api.collectionsList()])
   videos.value = v
-  playlists.value = p
+  collections.value = c
   loading.value = false
 }
 
@@ -127,6 +127,6 @@ const videoResults = computed(() => {
 const collectionResults = computed(() => {
   const q = search.normalizedQuery
   if (!q) return []
-  return playlists.value.filter((p) => p.name.toLowerCase().includes(q))
+  return collections.value.filter((c) => c.name.toLowerCase().includes(q))
 })
 </script>

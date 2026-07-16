@@ -2,7 +2,7 @@
   <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
     <component
       :is="mode === 'navigate' ? RouterLink : 'button'"
-      :to="mode === 'navigate' ? '/playlist/all' : undefined"
+      :to="mode === 'navigate' ? '/collection/all' : undefined"
       :type="mode === 'select' ? 'button' : undefined"
       class="group block w-full text-left"
       @click="mode === 'select' ? toggleAll() : undefined"
@@ -31,19 +31,19 @@
       <p class="text-xs text-muted-foreground">{{ allSavedCount ?? 0 }} videos</p>
     </component>
 
-    <PlaylistCard
+    <CollectionCard
       v-if="mode === 'navigate'"
-      :playlist="favoritesPlaylist"
+      :collection="favoritesCollection"
       mode="navigate"
     />
 
-    <PlaylistCard
-      v-for="p in playlists"
-      :key="p.id"
-      :playlist="p"
+    <CollectionCard
+      v-for="c in collections"
+      :key="c.id"
+      :collection="c"
       :mode="mode"
-      :selected="selectedSet.has(p.id)"
-      @update:selected="(v) => toggleOne(p.id, v)"
+      :selected="selectedSet.has(c.id)"
+      @update:selected="(v) => toggleOne(c.id, v)"
     />
   </div>
 </template>
@@ -54,12 +54,12 @@ import { LibraryBigIcon } from '@lucide/vue'
 import { RouterLink } from 'vue-router'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
-import type { PlaylistDto } from '@shared/types'
-import PlaylistCard from './PlaylistCard.vue'
+import type { CollectionDto } from '@shared/types'
+import CollectionCard from './CollectionCard.vue'
 
 const props = withDefaults(
   defineProps<{
-    playlists: PlaylistDto[]
+    collections: CollectionDto[]
     mode?: 'navigate' | 'select'
     allSavedCount?: number
     favoritesCount?: number
@@ -81,7 +81,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{ 'update:selectedIds': [value: string[]]; 'update:allSelected': [value: boolean] }>()
 
-const favoritesPlaylist = computed<PlaylistDto>(() => ({
+const favoritesCollection = computed<CollectionDto>(() => ({
   id: 'favorites',
   name: 'Favorites',
   kind: 'user',
@@ -94,7 +94,7 @@ const favoritesPlaylist = computed<PlaylistDto>(() => ({
 const selectedSet = computed(() => new Set(props.selectedIds))
 
 const allCollectionsSelected = computed(
-  () => props.playlists.length > 0 && props.playlists.every((p) => selectedSet.value.has(p.id))
+  () => props.collections.length > 0 && props.collections.every((c) => selectedSet.value.has(c.id))
 )
 const allState = computed<boolean | 'indeterminate'>(() => {
   const fullyOn = allCollectionsSelected.value && props.allSelected
@@ -118,7 +118,7 @@ function toggleAll(): void {
   } else {
     emit(
       'update:selectedIds',
-      props.playlists.map((p) => p.id)
+      props.collections.map((c) => c.id)
     )
     emit('update:allSelected', true)
   }

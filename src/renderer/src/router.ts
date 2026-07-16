@@ -7,7 +7,7 @@ export const router = createRouter({
   history: createWebHashHistory(),
   routes: [
     { path: '/', name: 'library', component: () => import('./pages/LibraryPage.vue') },
-    { path: '/playlist/:id', name: 'playlist', component: () => import('./pages/PlaylistPage.vue') },
+    { path: '/collection/:id', name: 'collection', component: () => import('./pages/CollectionPage.vue') },
     { path: '/watch/:id', name: 'watch', component: () => import('./pages/WatchPage.vue') },
     { path: '/sync', redirect: '/settings' },
     { path: '/settings', name: 'settings', component: () => import('./pages/SettingsPage.vue') },

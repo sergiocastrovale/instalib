@@ -131,7 +131,7 @@ const dockSlot = ref<HTMLElement | null>(null)
 
 async function ensureQueue(): Promise<void> {
   if (queue.listId.value === listId.value && queue.ids.value.length) return
-  const query = listId.value === 'all' ? {} : listId.value === 'favorites' ? { favorites: true } : { playlistId: listId.value }
+  const query = listId.value === 'all' ? {} : listId.value === 'favorites' ? { favorites: true } : { collectionId: listId.value }
   const list = await window.api.videosList(query)
   const ids = list.map((v) => v.id)
   queue.setQueue(listId.value, ids, videoId.value)
@@ -140,7 +140,7 @@ async function ensureQueue(): Promise<void> {
 
 async function loadQueueVideos(): Promise<void> {
   if (queueVideos.value.length && queue.listId.value === listId.value) return
-  const query = listId.value === 'all' ? {} : listId.value === 'favorites' ? { favorites: true } : { playlistId: listId.value }
+  const query = listId.value === 'all' ? {} : listId.value === 'favorites' ? { favorites: true } : { collectionId: listId.value }
   const list = await window.api.videosList(query)
   queueVideos.value = list.filter((v) => queue.ids.value.includes(v.id))
 }

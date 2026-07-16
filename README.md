@@ -2,7 +2,7 @@
 
 A private video player for the videos you've saved on Instagram — built for
 rewatching tutorials (music lessons, recipes, workouts...) with a real player:
-speed control, resume where you left off, playlists, favorites, and notes.
+speed control, resume where you left off, collections, favorites, and notes.
 
 Nothing you save is uploaded anywhere. Everything stays on your computer.
 
@@ -11,7 +11,7 @@ Nothing you save is uploaded anywhere. Everything stays on your computer.
 - **Import** — export your saved posts from Instagram and drop the file into the app.
 - **Watch** — videos play right away, streamed from the web.
 - **Go offline** — optionally download videos to your computer so they still play without internet, or if Instagram ever removes them.
-- **Organize** — sort videos into playlists, mark favorites, write notes on each video (great for "here's the chord progression at 1:32").
+- **Organize** — sort videos into collections, mark favorites, write notes on each video (great for "here's the chord progression at 1:32").
 - **Player** — playback speed, resume position, loop a section (A/B), keyboard shortcuts.
 
 ## Install
