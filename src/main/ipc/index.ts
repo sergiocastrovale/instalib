@@ -97,7 +97,16 @@ export function registerAllIpc(mainWindow: BrowserWindow): void {
     return { version }
   })
 
-  ipcMain.handle(IPC.shellOpenExternal, (_e, url: string) => shell.openExternal(url))
+  ipcMain.handle(IPC.shellOpenExternal, (_e, url: string) => {
+    let parsed: URL
+    try {
+      parsed = new URL(url)
+    } catch {
+      return
+    }
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return
+    return shell.openExternal(url)
+  })
 
   ipcMain.handle(IPC.getAppVersion, () => app.getVersion())
   ipcMain.handle(IPC.windowMinimize, () => mainWindow.minimize())
