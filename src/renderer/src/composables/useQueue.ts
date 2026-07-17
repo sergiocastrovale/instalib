@@ -1,10 +1,16 @@
 import { ref } from 'vue'
+import type { VideoDto, VideoListQuery } from '@shared/types'
 
 const listId = ref<string | null>(null)
 const ids = ref<string[]>([])
 const index = ref<number>(0)
 const autoplay = ref<boolean>(true)
 const shuffleOn = ref<boolean>(false)
+const videos = ref<VideoDto[]>([])
+
+function listQueryFor(id: string): VideoListQuery {
+  return id === 'all' ? {} : id === 'favorites' ? { favorites: true } : { collectionId: id }
+}
 
 export function useQueue() {
   function setQueue(newListId: string, videoIds: string[], startId?: string): void {
@@ -38,7 +44,45 @@ export function useQueue() {
     return ids.value[index.value] ?? null
   }
 
-  return { listId, ids, index, autoplay, shuffleOn, setQueue, setIndexById, hasNext, hasPrev, next, prev }
+  async function ensureQueue(targetListId: string, currentVideoId: string): Promise<void> {
+    if (listId.value === targetListId && ids.value.length) return
+    const list = await window.api.videosList(listQueryFor(targetListId))
+    setQueue(targetListId, list.map((v) => v.id), currentVideoId)
+    videos.value = list
+  }
+
+  async function loadQueueVideos(targetListId: string): Promise<void> {
+    if (videos.value.length && listId.value === targetListId) return
+    const list = await window.api.videosList(listQueryFor(targetListId))
+    videos.value = list.filter((v) => ids.value.includes(v.id))
+  }
+
+  function shuffleQueue(currentId?: string): void {
+    shuffleOn.value = !shuffleOn.value
+    if (shuffleOn.value && listId.value) {
+      const rest = ids.value.filter((id) => id !== currentId)
+      const shuffled = shuffleArray(rest)
+      setQueue(listId.value, currentId ? [currentId, ...shuffled] : shuffled, currentId)
+    }
+  }
+
+  return {
+    listId,
+    ids,
+    index,
+    autoplay,
+    shuffleOn,
+    videos,
+    setQueue,
+    setIndexById,
+    hasNext,
+    hasPrev,
+    next,
+    prev,
+    ensureQueue,
+    loadQueueVideos,
+    shuffleQueue
+  }
 }
 
 export function shuffleArray<T>(arr: T[]): T[] {

@@ -51,14 +51,14 @@
           <Button size="sm" variant="ghost" :class="{ 'text-primary': queue.autoplay.value }" @click="queue.autoplay.value = !queue.autoplay.value">
             Autoplay
           </Button>
-          <Button size="icon" variant="ghost" :class="{ 'text-primary': queue.shuffleOn.value }" @click="shuffleQueue">
+          <Button size="icon" variant="ghost" :class="{ 'text-primary': queue.shuffleOn.value }" @click="queue.shuffleQueue(video.id)">
             <ShuffleIcon class="size-4" />
           </Button>
         </div>
       </div>
       <div class="flex flex-col gap-1">
         <button
-          v-for="qv in queueVideos"
+          v-for="qv in queue.videos.value"
           :key="qv.id"
           class="flex cursor-pointer items-center gap-2 rounded-lg p-1.5 text-left hover:bg-accent"
           :class="{ 'bg-primary/15': qv.id === video.id }"
@@ -121,7 +121,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { formatDate, formatDuration } from '@/lib/format'
-import { shuffleArray, useQueue } from '@/composables/useQueue'
+import { useQueue } from '@/composables/useQueue'
 import { usePlayer } from '@/composables/usePlayer'
 import { usePlayerHotkeys } from '@/composables/usePlayerHotkeys'
 import { router } from '@/router'
@@ -163,38 +163,11 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 const player = usePlayer()
 const queue = useQueue()
 
-const queueVideos = ref<VideoDto[]>([])
 const showShortcuts = ref(false)
 const dockSlot = ref<HTMLElement | null>(null)
 
-async function ensureQueue(): Promise<void> {
-  if (queue.listId.value === listId.value && queue.ids.value.length) return
-  const query = listId.value === 'all' ? {} : listId.value === 'favorites' ? { favorites: true } : { collectionId: listId.value }
-  const list = await window.api.videosList(query)
-  const ids = list.map((v) => v.id)
-  queue.setQueue(listId.value, ids, videoId.value)
-  queueVideos.value = list
-}
-
-async function loadQueueVideos(): Promise<void> {
-  if (queueVideos.value.length && queue.listId.value === listId.value) return
-  const query = listId.value === 'all' ? {} : listId.value === 'favorites' ? { favorites: true } : { collectionId: listId.value }
-  const list = await window.api.videosList(query)
-  queueVideos.value = list.filter((v) => queue.ids.value.includes(v.id))
-}
-
 async function playFromQueue(id: string): Promise<void> {
   await router.push(`/watch/${id}?list=${listId.value}&from=${fromOrigin.value}`)
-}
-
-function shuffleQueue(): void {
-  queue.shuffleOn.value = !queue.shuffleOn.value
-  if (queue.shuffleOn.value) {
-    const currentId = video.value?.id
-    const rest = queue.ids.value.filter((id) => id !== currentId)
-    const shuffled = shuffleArray(rest)
-    queue.setQueue(listId.value, currentId ? [currentId, ...shuffled] : shuffled, currentId)
-  }
 }
 
 async function openOnInstagram(): Promise<void> {
@@ -206,8 +179,8 @@ watch(videoId, loadVideoData, { immediate: true })
 
 watch(video, async (v) => {
   if (!v) return
-  await ensureQueue()
-  await loadQueueVideos()
+  await queue.ensureQueue(listId.value, videoId.value)
+  await queue.loadQueueVideos(listId.value)
   if (player.state.video?.id !== v.id) {
     await player.loadVideo(v)
   }
