@@ -94,6 +94,7 @@ import { shuffleArray, useQueue } from '@/composables/useQueue'
 import { useSearchStore } from '@/stores/search'
 import { useLibraryStore } from '@/stores/library'
 import { router } from '@/router'
+import { listQuery } from '@/lib/listQuery'
 import type { CollectionDto, VideoDto } from '@shared/types'
 
 const route = useRoute()
@@ -113,9 +114,7 @@ const loading = ref(true)
 
 async function load(): Promise<void> {
   loading.value = true
-  const id = routeListId.value
-  const query = id === 'all' ? {} : id === 'favorites' ? { favorites: true } : { collectionId: id }
-  const [v, c] = await Promise.all([window.api.videosList(query), window.api.collectionsList()])
+  const [v, c] = await Promise.all([window.api.videosList(listQuery(routeListId.value)), window.api.collectionsList()])
   videos.value = v
   collections.value = c
   loading.value = false

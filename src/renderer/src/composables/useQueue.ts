@@ -1,5 +1,6 @@
 import { ref } from 'vue'
-import type { VideoDto, VideoListQuery } from '@shared/types'
+import type { VideoDto } from '@shared/types'
+import { listQuery } from '@/lib/listQuery'
 
 const listId = ref<string | null>(null)
 const ids = ref<string[]>([])
@@ -7,10 +8,6 @@ const index = ref<number>(0)
 const autoplay = ref<boolean>(true)
 const shuffleOn = ref<boolean>(false)
 const videos = ref<VideoDto[]>([])
-
-function listQueryFor(id: string): VideoListQuery {
-  return id === 'all' ? {} : id === 'favorites' ? { favorites: true } : { collectionId: id }
-}
 
 export function useQueue() {
   function setQueue(newListId: string, videoIds: string[], startId?: string): void {
@@ -46,14 +43,14 @@ export function useQueue() {
 
   async function ensureQueue(targetListId: string, currentVideoId: string): Promise<void> {
     if (listId.value === targetListId && ids.value.length) return
-    const list = await window.api.videosList(listQueryFor(targetListId))
+    const list = await window.api.videosList(listQuery(targetListId))
     setQueue(targetListId, list.map((v) => v.id), currentVideoId)
     videos.value = list
   }
 
   async function loadQueueVideos(targetListId: string): Promise<void> {
     if (videos.value.length && listId.value === targetListId) return
-    const list = await window.api.videosList(listQueryFor(targetListId))
+    const list = await window.api.videosList(listQuery(targetListId))
     videos.value = list.filter((v) => ids.value.includes(v.id))
   }
 
