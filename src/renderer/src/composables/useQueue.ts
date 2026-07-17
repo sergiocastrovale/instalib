@@ -32,14 +32,12 @@ export function useQueue() {
 
   function next(): string | null {
     if (!hasNext()) return null
-    index.value++
-    return ids.value[index.value] ?? null
+    return ids.value[index.value + 1] ?? null
   }
 
   function prev(): string | null {
     if (!hasPrev()) return null
-    index.value--
-    return ids.value[index.value] ?? null
+    return ids.value[index.value - 1] ?? null
   }
 
   async function ensureQueue(targetListId: string, currentVideoId: string): Promise<void> {
