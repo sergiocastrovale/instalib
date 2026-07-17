@@ -10,7 +10,7 @@ Fix items in order below. Each is self-contained: location, problem, fix directi
 
 - [x] `src/main/services/binaries.ts:111-118` — Interrupted yt-dlp download leaves truncated binary at final `ytDlpPath()` (no temp+rename). Next run's `existsSync` check treats it as installed forever; `binariesReady()` reports true on a broken binary. Same overwrite-only pattern for ffmpeg archive (:120-129). Fix: download to temp file, rename atomically on success only. (ffmpeg already used temp archive + atomic rename, left untouched.)
 - [x] `src/renderer/src/composables/usePlayer.ts:70-88` (`applySource`) — No guard that `state.video` is still current after `await window.api.playerResolve(...)`. Rapid next/prev can let an earlier resolve finish last and set `el.src` to stale video's URL. Fix: capture video id before await, bail if `state.video?.id` changed by the time result returns.
-- [ ] `src/renderer/src/stores/library.ts:19-33` (`refresh`) — No `.catch` on the `Promise.all`. Rejection leaves `loading=true` forever (permanent skeletons), unhandled promise rejection, and `loaded=false` causes every page's mount check to retry endlessly. Fix: add `.catch` that resets `loading` and surfaces error.
+- [x] `src/renderer/src/stores/library.ts:19-33` (`refresh`) — No `.catch` on the `Promise.all`. Rejection leaves `loading=true` forever (permanent skeletons), unhandled promise rejection, and `loaded=false` causes every page's mount check to retry endlessly. Fix: add `.catch` that resets `loading` and surfaces error.
 
 ## P1 — Medium severity bugs
 

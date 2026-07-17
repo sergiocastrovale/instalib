@@ -9,6 +9,7 @@ export const useLibraryStore = defineStore('library', () => {
   const collections = ref<CollectionDto[]>([])
   const loading = ref(true)
   const loaded = ref(false)
+  const error = ref<string | null>(null)
   const sidebarCollapsed = ref(localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1')
 
   const totalVideoCount = computed(() => videos.value.length)
@@ -19,14 +20,18 @@ export const useLibraryStore = defineStore('library', () => {
   function refresh(): Promise<void> {
     if (pendingRefresh) return pendingRefresh
     loading.value = true
+    error.value = null
     pendingRefresh = Promise.all([window.api.videosList({}), window.api.collectionsList()])
       .then(([v, c]) => {
         videos.value = v
         collections.value = c
-        loading.value = false
         loaded.value = true
       })
+      .catch((err) => {
+        error.value = err instanceof Error ? err.message : String(err)
+      })
       .finally(() => {
+        loading.value = false
         pendingRefresh = null
       })
     return pendingRefresh
@@ -42,6 +47,7 @@ export const useLibraryStore = defineStore('library', () => {
     collections,
     loading,
     loaded,
+    error,
     sidebarCollapsed,
     totalVideoCount,
     favoritesCount,
