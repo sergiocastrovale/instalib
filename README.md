@@ -1,18 +1,22 @@
-# Instalib
+## What's this?
 
-A private video player for the videos you've saved on Instagram — built for
-rewatching tutorials (music lessons, recipes, workouts...) with a real player:
-speed control, resume where you left off, collections, favorites, and notes.
+I am a musician, and most of the videos I save on Instagram are great instrument or mixing tutorials which I want to learn. Unfortunately, relying on Instagram for this is terrible, since you have basically no control over the video, and managing your catalogue of saved videos is very frustrating.
 
-Nothing you save is uploaded anywhere. Everything stays on your computer.
+Instalib allows you to import a collection of your `saved` videos from Instagram and have a better viewing and learning experience. It features things like:
 
-## What it does
+- Downloading all or part of your collection for offline viewing (still works if you don't!)
 
-- **Import** — export your saved posts from Instagram and drop the file into the app.
-- **Watch** — videos play right away, streamed from the web.
-- **Go offline** — optionally download videos to your computer so they still play without internet, or if Instagram ever removes them.
-- **Organize** — sort videos into collections, mark favorites, write notes on each video (great for "here's the chord progression at 1:32").
-- **Player** — playback speed, resume position, loop a section (A/B), keyboard shortcuts.
+- Picture-in-picture allowing you to keep organizing your library while watching the video
+
+- Focus mode, which removes unnecessary clutter from the UI and expands the video
+
+- Repeating a fixed section of the video
+
+- Note taking
+
+- Favorites
+
+Think of this like your own personal Youtube for Instagram saved content, with a bunch of neat additions.
 
 ## Install
 
@@ -27,8 +31,12 @@ The first time you open Instalib, it downloads two small free helper tools
 it needs (for fetching video info and converting video files). This needs
 an internet connection and takes a minute or two — only happens once.
 
+## Dependencies
+
+
+
 ## Notes
 
-- Dark mode is on by default. Switch it anytime in Settings.
-- Instalib needs to know you're logged into Instagram in your browser, so it can
-  fetch your saved videos. Setup covers this.
+Instalib needs to know you're logged into Instagram in your browser, so it can relay it to YT-DLP and fetch the videos. [This is how YT-DLP works on its own](https://github.com/yt-dlp/yt-dlp/wiki/FAQ#i-extracted-a-video-url-but-it-does-not-play-on-another-machine--in-my-web-browser), it's not specific to this app. Requests are throttled to avoid rate-limits.
+
+This is the _only_ point of contact with Instagram - it does not store any credentials or information whatsoever.

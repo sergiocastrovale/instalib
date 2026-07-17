@@ -1,6 +1,7 @@
 import { nextTick, reactive, shallowRef } from 'vue'
-import type { VideoDto, PlaybackSourceKind } from '@shared/types'
+import type { VideoDto, VideoPatch, PlaybackSourceKind } from '@shared/types'
 import { useQueue } from './useQueue'
+import { useLibraryStore } from '../stores/library'
 import { router } from '../router'
 
 interface PlayerState {
@@ -45,9 +46,19 @@ const videoEl = shallowRef<HTMLVideoElement | null>(null)
 let progressTimer: ReturnType<typeof setInterval> | null = null
 let hasRetriedResolve = false
 
+function patchVideo(patch: VideoPatch): Promise<void> {
+  if (!state.video) return Promise.resolve()
+  Object.assign(state.video, patch)
+  useLibraryStore().patchVideoLocal(state.video.id, patch)
+  return window.api.videosPatch(state.video.id, patch).then(
+    () => {},
+    () => {}
+  )
+}
+
 function persistProgress(): void {
   if (!state.video) return
-  window.api.videosPatch(state.video.id, { positionSec: state.currentTime }).catch(() => {})
+  patchVideo({ positionSec: state.currentTime })
 }
 
 function startProgressTimer(): void {
@@ -160,7 +171,7 @@ export function usePlayer() {
     state.speed = clamped
     if (videoEl.value) videoEl.value.playbackRate = clamped
     if (state.video) {
-      window.api.videosPatch(state.video.id, { speed: clamped }).catch(() => {})
+      patchVideo({ speed: clamped })
     }
   }
 
@@ -189,28 +200,22 @@ export function usePlayer() {
 
   async function markWatched(): Promise<void> {
     if (!state.video) return
-    state.video.watched = true
-    await window.api.videosPatch(state.video.id, { watched: true }).catch(() => {})
+    await patchVideo({ watched: true })
   }
 
   async function toggleWatched(): Promise<void> {
     if (!state.video) return
-    const next = !state.video.watched
-    state.video.watched = next
-    await window.api.videosPatch(state.video.id, { watched: next }).catch(() => {})
+    await patchVideo({ watched: !state.video.watched })
   }
 
   async function toggleFavorite(): Promise<void> {
     if (!state.video) return
-    const next = !state.video.favorite
-    state.video.favorite = next
-    await window.api.videosPatch(state.video.id, { favorite: next }).catch(() => {})
+    await patchVideo({ favorite: !state.video.favorite })
   }
 
   async function saveNotes(notes: string): Promise<void> {
     if (!state.video) return
-    state.video.notes = notes
-    await window.api.videosPatch(state.video.id, { notes }).catch(() => {})
+    await patchVideo({ notes })
   }
 
   async function playNextInQueue(): Promise<boolean> {

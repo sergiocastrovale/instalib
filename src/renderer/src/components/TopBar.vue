@@ -1,17 +1,17 @@
 <template>
   <header class="shrink-0 bg-background/95 backdrop-blur">
-    <div class="flex min-h-[88px] items-center gap-6 px-6">
-      <div class="mt-6 flex flex-1 justify-center self-start">
-        <div class="relative w-full max-w-2xl">
+    <div class="relative flex min-h-[88px] items-center px-6">
+      <div class="absolute left-1/2 top-6 w-full max-w-2xl -translate-x-1/2">
+        <div class="relative">
           <Input
             v-model="search.query"
             placeholder="Search for a video or collection"
-            class="h-14 rounded-full border-transparent bg-muted/50 pr-12 pl-6 text-base"
+            class="h-14 rounded-full border-transparent bg-muted/50 pr-12 pl-6 text-base focus-visible:border-transparent focus-visible:ring-0"
           />
           <SearchIcon class="absolute right-5 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
         </div>
       </div>
-      <div class="flex items-center gap-1 text-muted-foreground">
+      <div class="ml-auto flex items-center gap-1 text-muted-foreground">
         <button
           class="flex size-9 items-center justify-center rounded-lg hover:bg-accent hover:text-foreground"
           title="Toggle theme"

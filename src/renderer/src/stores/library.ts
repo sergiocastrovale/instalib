@@ -77,6 +77,11 @@ export const useLibraryStore = defineStore('library', () => {
     await refresh()
   }
 
+  function patchVideoLocal(id: string, patch: Partial<VideoDto>): void {
+    const video = videos.value.find((v) => v.id === id)
+    if (video) Object.assign(video, patch)
+  }
+
   return {
     videos,
     collections,
@@ -91,6 +96,7 @@ export const useLibraryStore = defineStore('library', () => {
     continueWatching,
     refresh,
     toggleSidebar,
-    deleteCollection
+    deleteCollection,
+    patchVideoLocal
   }
 })
