@@ -274,6 +274,8 @@ export function usePlayer() {
   }
 
   async function onEnded(): Promise<void> {
+    persistProgress()
+    stopProgressTimer()
     await markWatched()
     const advanced = queue.autoplay.value ? await playNextInQueue() : false
     if (!advanced) state.playing = false
