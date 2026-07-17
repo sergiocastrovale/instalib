@@ -27,26 +27,12 @@
       </div>
     </div>
 
-    <div class="flex flex-wrap items-center gap-3">
-      <div class="relative max-w-xs flex-1">
-        <SearchIcon class="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-        <Input v-model="search.collectionFilter" placeholder="Filter this collection…" class="h-[38px] pl-8" />
-      </div>
-      <Select v-model="authorFilter">
-        <SelectTrigger class="h-[38px] w-44"><SelectValue placeholder="All authors" /></SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All authors</SelectItem>
-          <SelectItem v-for="a in authors" :key="a" :value="a">{{ a }}</SelectItem>
-        </SelectContent>
-      </Select>
-      <Select v-model="sortBy">
-        <SelectTrigger class="h-[38px] w-44"><SelectValue /></SelectTrigger>
-        <SelectContent>
-          <SelectItem value="savedAt_desc">Newest saved</SelectItem>
-          <SelectItem value="savedAt_asc">Oldest saved</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
+    <CollectionFilterBar
+      v-model:search="search.collectionFilter"
+      v-model:author-filter="authorFilter"
+      v-model:sort-by="sortBy"
+      :authors="authors"
+    />
 
     <div v-if="loading" class="flex flex-col gap-2">
       <Skeleton v-for="i in 6" :key="i" class="h-20 rounded-lg" />
@@ -70,17 +56,16 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { MoreVerticalIcon, PlayIcon, SearchIcon, ShuffleIcon } from '@lucide/vue'
+import { MoreVerticalIcon, PlayIcon, ShuffleIcon } from '@lucide/vue'
 import { toast } from 'vue-sonner'
-import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import VideoRow from '@/components/VideoRow.vue'
 import Breadcrumbs, { type BreadcrumbItem } from '@/components/Breadcrumbs.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import { shuffleArray, useQueue } from '@/composables/useQueue'
+import CollectionFilterBar from '@/components/CollectionFilterBar.vue'
+import { useQueue } from '@/composables/useQueue'
 import { useSearchStore } from '@/stores/search'
 import { useLibraryStore } from '@/stores/library'
 import { router } from '@/router'
@@ -132,10 +117,9 @@ async function doRemoveCollection(): Promise<void> {
   if (!currentCollection.value) return
   removingCollection.value = true
   try {
-    await window.api.collectionsDelete(currentCollection.value.id)
+    await lib.deleteCollection(currentCollection.value.id)
     showRemoveCollectionConfirm.value = false
     toast.success('Collection removed')
-    await lib.refresh()
     await router.push('/')
   } catch {
     toast.error('Failed to remove collection')
@@ -151,12 +135,11 @@ const { authorFilter, sortBy, authors, filtered } = useVideoFilters(
 
 const queue = useQueue()
 async function playAll(shuffle: boolean): Promise<void> {
-  const ids = filtered.value.map((v) => v.id)
-  if (!ids.length) return
-  const ordered = shuffle ? shuffleArray(ids) : ids
-  queue.shuffleOn.value = shuffle
-  queue.setQueue(routeListId.value, ordered)
-  const fromQs = fromOrigin.value ? `&from=${fromOrigin.value}` : ''
-  await router.push(`/watch/${ordered[0]}?list=${routeListId.value}${fromQs}`)
+  await queue.playAll(
+    routeListId.value,
+    filtered.value.map((v) => v.id),
+    shuffle,
+    fromOrigin.value
+  )
 }
 </script>

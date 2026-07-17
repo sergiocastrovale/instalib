@@ -42,6 +42,11 @@ export const useLibraryStore = defineStore('library', () => {
     localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed.value ? '1' : '0')
   }
 
+  async function deleteCollection(id: string): Promise<void> {
+    await window.api.collectionsDelete(id)
+    await refresh()
+  }
+
   return {
     videos,
     collections,
@@ -52,6 +57,7 @@ export const useLibraryStore = defineStore('library', () => {
     totalVideoCount,
     favoritesCount,
     refresh,
-    toggleSidebar
+    toggleSidebar,
+    deleteCollection
   }
 })

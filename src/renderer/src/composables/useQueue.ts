@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import type { VideoDto } from '@shared/types'
 import { listQuery } from '@/lib/listQuery'
+import { router } from '@/router'
 
 const listId = ref<string | null>(null)
 const ids = ref<string[]>([])
@@ -63,6 +64,15 @@ export function useQueue() {
     }
   }
 
+  async function playAll(targetListId: string, videoIds: string[], shuffle: boolean, from?: string): Promise<void> {
+    if (!videoIds.length) return
+    const ordered = shuffle ? shuffleArray(videoIds) : videoIds
+    shuffleOn.value = shuffle
+    setQueue(targetListId, ordered)
+    const fromQs = from ? `&from=${from}` : ''
+    await router.push(`/watch/${ordered[0]}?list=${targetListId}${fromQs}`)
+  }
+
   return {
     listId,
     ids,
@@ -78,7 +88,8 @@ export function useQueue() {
     prev,
     ensureQueue,
     loadQueueVideos,
-    shuffleQueue
+    shuffleQueue,
+    playAll
   }
 }
 
