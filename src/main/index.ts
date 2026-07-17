@@ -7,7 +7,7 @@ import { installCdnHeaderOverrides } from './cdn-headers'
 import { registerAllIpc } from './ipc/index'
 import { getDb } from './db/index'
 import { getSettings } from './db/settings'
-import { listVideosNeedingCover } from './db/videos'
+import { listVideosNeedingCover, resetStaleDownloads } from './db/videos'
 import { startCoverFetch, isCoverFetchRunning } from './services/covers'
 import { resolvePortableDataDir } from './portable'
 
@@ -27,6 +27,7 @@ app.whenReady().then(() => {
   })
 
   getDb()
+  resetStaleDownloads()
   registerMediaProtocol()
   installCdnHeaderOverrides()
   nativeTheme.themeSource = getSettings().theme

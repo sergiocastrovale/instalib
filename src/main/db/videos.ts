@@ -288,3 +288,9 @@ export function resetToPending(id: string): void {
     .prepare("UPDATE videos SET status = 'pending', error = NULL, updated_at = ? WHERE id = ?")
     .run(Date.now(), id)
 }
+
+export function resetStaleDownloads(): void {
+  getDb()
+    .prepare("UPDATE videos SET status = 'pending', error = NULL, updated_at = ? WHERE status = 'downloading'")
+    .run(Date.now())
+}
