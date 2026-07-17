@@ -146,34 +146,25 @@
       </TabsContent>
     </Tabs>
 
-    <Dialog v-model:open="showPurgeConfirm">
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Are you sure?</DialogTitle>
-          <DialogDescription>
-            This stops any download or cover fetch in progress and permanently deletes all saved videos,
-            collections, and notes from the database. This cannot be undone.
-          </DialogDescription>
-        </DialogHeader>
-        <div class="space-y-3">
-          <div class="flex items-center justify-between gap-2">
-            <Label>Also remove all downloaded videos</Label>
-            <Switch v-model="removeVideos" />
-          </div>
-          <div class="flex items-center justify-between gap-2">
-            <Label>Also remove all downloaded video cover images</Label>
-            <Switch v-model="removeCovers" />
-          </div>
+    <ConfirmDialog
+      v-model:open="showPurgeConfirm"
+      title="Are you sure?"
+      description="This stops any download or cover fetch in progress and permanently deletes all saved videos, collections, and notes from the database. This cannot be undone."
+      confirm-label="Purge"
+      :loading="purging"
+      @confirm="confirmPurge"
+    >
+      <div class="space-y-3">
+        <div class="flex items-center justify-between gap-2">
+          <Label>Also remove all downloaded videos</Label>
+          <Switch v-model="removeVideos" />
         </div>
-        <DialogFooter>
-          <Button variant="outline" @click="showPurgeConfirm = false">Cancel</Button>
-          <Button variant="destructive" :disabled="purging" @click="confirmPurge">
-            <Loader2Icon v-if="purging" class="size-4 animate-spin" />
-            Purge
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        <div class="flex items-center justify-between gap-2">
+          <Label>Also remove all downloaded video cover images</Label>
+          <Switch v-model="removeCovers" />
+        </div>
+      </div>
+    </ConfirmDialog>
   </div>
 </template>
 
@@ -187,10 +178,10 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import DownloadsSettings from '@/components/settings/DownloadsSettings.vue'
 import ImportDropzone from '@/components/ImportDropzone.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { useLibraryStore } from '@/stores/library'
 import type { BrowserOption, CoverFetchStatus, DataLocation, DbInfo, Settings, SetupStatus } from '@shared/types'
 

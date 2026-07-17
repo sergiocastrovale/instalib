@@ -56,40 +56,30 @@
       <VideoRow v-for="v in filtered" :key="v.id" :video="v" :list-id="routeListId" :from="fromOrigin" />
     </div>
 
-    <Dialog v-model:open="showRemoveCollectionConfirm">
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Are you sure?</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to remove this collection? This will NOT remove the collection from
-            Instagram, only from Instalib. You can add it back by re-syncing via zip file.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" @click="showRemoveCollectionConfirm = false">Cancel</Button>
-          <Button variant="destructive" :disabled="removingCollection" @click="doRemoveCollection">
-            <Loader2Icon v-if="removingCollection" class="size-4 animate-spin" />
-            Remove
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <ConfirmDialog
+      v-model:open="showRemoveCollectionConfirm"
+      title="Are you sure?"
+      description="Are you sure you want to remove this collection? This will NOT remove the collection from Instagram, only from Instalib. You can add it back by re-syncing via zip file."
+      confirm-label="Remove"
+      :loading="removingCollection"
+      @confirm="doRemoveCollection"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { Loader2Icon, MoreVerticalIcon, PlayIcon, SearchIcon, ShuffleIcon } from '@lucide/vue'
+import { MoreVerticalIcon, PlayIcon, SearchIcon, ShuffleIcon } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import VideoRow from '@/components/VideoRow.vue'
 import Breadcrumbs, { type BreadcrumbItem } from '@/components/Breadcrumbs.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { shuffleArray, useQueue } from '@/composables/useQueue'
 import { useSearchStore } from '@/stores/search'
 import { useLibraryStore } from '@/stores/library'
