@@ -56,24 +56,7 @@
       @shuffle="queue.shuffleQueue(video.id)"
     />
 
-    <Dialog v-model:open="showShortcuts">
-      <DialogContent>
-        <DialogHeader><DialogTitle>Keyboard shortcuts</DialogTitle></DialogHeader>
-        <div class="grid grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
-          <span class="text-muted-foreground">Play / pause</span><span>Space or K</span>
-          <span class="text-muted-foreground">Seek ± 5s</span><span>← / →</span>
-          <span class="text-muted-foreground">Seek ± 10s</span><span>J / L</span>
-          <span class="text-muted-foreground">Volume</span><span>↑ / ↓</span>
-          <span class="text-muted-foreground">Speed step</span><span>[ / ]</span>
-          <span class="text-muted-foreground">Next / previous</span><span>N / P</span>
-          <span class="text-muted-foreground">Mute</span><span>M</span>
-          <span class="text-muted-foreground">Fullscreen</span><span>F</span>
-          <span class="text-muted-foreground">Set loop A / B</span><span>A / B</span>
-          <span class="text-muted-foreground">Favorite</span><span>S</span>
-          <span class="text-muted-foreground">This help</span><span>?</span>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <ShortcutsDialog v-model:open="showShortcuts" />
     </div>
   </div>
 </template>
@@ -84,7 +67,6 @@ import { useRoute } from 'vue-router'
 import { CheckCircle2Icon, ExternalLinkIcon, HeartIcon, KeyboardIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { formatDate } from '@/lib/format'
 import { useQueue } from '@/composables/useQueue'
 import { usePlayer } from '@/composables/usePlayer'
@@ -92,6 +74,7 @@ import { usePlayerHotkeys } from '@/composables/usePlayerHotkeys'
 import NotesPanel from '@/components/NotesPanel.vue'
 import Breadcrumbs, { type BreadcrumbItem } from '@/components/Breadcrumbs.vue'
 import QueueList from '@/components/QueueList.vue'
+import ShortcutsDialog from '@/components/ShortcutsDialog.vue'
 import type { CollectionDto, VideoDto } from '@shared/types'
 
 const route = useRoute()

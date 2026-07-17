@@ -30,7 +30,7 @@ Fix items in order below. Each is self-contained: location, problem, fix directi
 - [x] `WatchPage.vue:237-298` — Extract ~60-line keyboard handler (`onKeydown` + listener wiring at :227-235) into a `usePlayerHotkeys(player)` composable; all branches already delegate to `player.*`. Also fix while here: ArrowLeft/Right and J/L seek shortcuts missing `e.preventDefault()` (:247-258), letting them scroll the page.
 - [x] `WatchPage.vue:159-187` — Move `ensureQueue`/`loadQueueVideos`/`shuffleQueue` and queue video objects into `useQueue` (page currently keeps a manually-synced local `queueVideos` ref — should live in the composable).
 - [x] `WatchPage.vue:43-80` — Extract "Up next" sidebar list into `QueueList`/`QueueItem` components (overlaps existing `VideoRow`/`VideoCard`, should reuse their look).
-- [ ] `WatchPage.vue:82-99` — Extract static keyboard-shortcuts help table into a `ShortcutsDialog` component; source its rows from the same shortcut data used by `usePlayerHotkeys` so they can't drift apart.
+- [x] `WatchPage.vue:82-99` — Extract static keyboard-shortcuts help table into a `ShortcutsDialog` component; source its rows from the same shortcut data used by `usePlayerHotkeys` so they can't drift apart.
 - [ ] Shared `listQuery(listId)` helper — `id==='all'?{}:id==='favorites'?{favorites:true}:{collectionId:id}` triplicated at `CollectionPage.vue:117`, `WatchPage.vue:161`, `WatchPage.vue:170`. Extract once, reuse.
 - [ ] Shared `useVideoFilters` composable — text/author filter + sort duplicated between `LibraryPage.vue:110-116` and `CollectionPage.vue:157-174`.
 - [ ] Shared `ConfirmDialog` component — near-identical destructive-confirm dialogs at `CollectionPage.vue:59-76` and `SettingsPage.vue:149-176`.
