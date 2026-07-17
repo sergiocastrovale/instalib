@@ -82,7 +82,7 @@ async function confirmPurge(): Promise<void> {
     await window.api.dbPurge({ removeVideos: removeVideos.value, removeCovers: removeCovers.value })
     showPurgeConfirm.value = false
     toast.success('Database purged')
-    await refreshCoverStatus()
+    await Promise.all([lib.refresh(), refreshCoverStatus()])
   } catch {
     toast.error('Purge failed')
   } finally {
