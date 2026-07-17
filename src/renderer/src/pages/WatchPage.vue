@@ -44,44 +44,17 @@
       <NotesPanel v-if="!player.state.focusMode" :model-value="video.notes" @save="player.saveNotes" />
     </div>
 
-    <aside v-if="!player.state.focusMode" class="flex flex-col gap-3">
-      <div class="flex items-center justify-between">
-        <h2 class="text-sm font-semibold">Up next</h2>
-        <div class="flex items-center gap-1">
-          <Button size="sm" variant="ghost" :class="{ 'text-primary': queue.autoplay.value }" @click="queue.autoplay.value = !queue.autoplay.value">
-            Autoplay
-          </Button>
-          <Button size="icon" variant="ghost" :class="{ 'text-primary': queue.shuffleOn.value }" @click="queue.shuffleQueue(video.id)">
-            <ShuffleIcon class="size-4" />
-          </Button>
-        </div>
-      </div>
-      <div class="flex flex-col gap-1">
-        <button
-          v-for="qv in queue.videos.value"
-          :key="qv.id"
-          class="flex cursor-pointer items-center gap-2 rounded-lg p-1.5 text-left hover:bg-accent"
-          :class="{ 'bg-primary/15': qv.id === video.id }"
-          @click="playFromQueue(qv.id)"
-        >
-          <div class="relative aspect-video w-[104px] shrink-0 overflow-hidden rounded border bg-muted">
-            <img v-if="qv.thumbPath" :src="`app-media://thumb/${qv.id}`" class="h-full w-full object-cover" loading="lazy" />
-            <div v-else class="flex h-full items-center justify-center"><VideoIcon class="size-4 text-muted-foreground" /></div>
-            <div v-if="qv.id === video.id" class="absolute inset-0 flex items-center justify-center bg-black/20">
-              <PlayIcon class="size-5 fill-white text-white" />
-            </div>
-          </div>
-          <div class="min-w-0 flex-1">
-            <p class="truncate text-xs font-medium" :class="{ 'text-primary': qv.id === video.id }">{{ qv.author ?? qv.shortcode }}</p>
-            <p class="truncate text-xs text-muted-foreground">{{ formatDate(qv.savedAt) }}</p>
-            <div class="flex items-center gap-1">
-              <CheckCircle2Icon v-if="qv.watched" class="size-3 text-emerald-500" />
-              <p class="truncate font-mono text-xs text-muted-foreground">{{ qv.durationSec ? formatDuration(qv.durationSec) : '' }}</p>
-            </div>
-          </div>
-        </button>
-      </div>
-    </aside>
+    <QueueList
+      v-if="!player.state.focusMode"
+      :videos="queue.videos.value"
+      :active-id="video.id"
+      :autoplay="queue.autoplay.value"
+      :shuffle-on="queue.shuffleOn.value"
+      :list-id="listId"
+      :from="fromOrigin"
+      @update:autoplay="queue.autoplay.value = $event"
+      @shuffle="queue.shuffleQueue(video.id)"
+    />
 
     <Dialog v-model:open="showShortcuts">
       <DialogContent>
@@ -108,25 +81,17 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import {
-  CheckCircle2Icon,
-  ExternalLinkIcon,
-  HeartIcon,
-  KeyboardIcon,
-  PlayIcon,
-  ShuffleIcon,
-  VideoIcon
-} from '@lucide/vue'
+import { CheckCircle2Icon, ExternalLinkIcon, HeartIcon, KeyboardIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { formatDate, formatDuration } from '@/lib/format'
+import { formatDate } from '@/lib/format'
 import { useQueue } from '@/composables/useQueue'
 import { usePlayer } from '@/composables/usePlayer'
 import { usePlayerHotkeys } from '@/composables/usePlayerHotkeys'
-import { router } from '@/router'
 import NotesPanel from '@/components/NotesPanel.vue'
 import Breadcrumbs, { type BreadcrumbItem } from '@/components/Breadcrumbs.vue'
+import QueueList from '@/components/QueueList.vue'
 import type { CollectionDto, VideoDto } from '@shared/types'
 
 const route = useRoute()
@@ -165,10 +130,6 @@ const queue = useQueue()
 
 const showShortcuts = ref(false)
 const dockSlot = ref<HTMLElement | null>(null)
-
-async function playFromQueue(id: string): Promise<void> {
-  await router.push(`/watch/${id}?list=${listId.value}&from=${fromOrigin.value}`)
-}
 
 async function openOnInstagram(): Promise<void> {
   if (!video.value) return
