@@ -1,0 +1,23 @@
+{
+  "saved_collections": [
+    {
+      "name": "My Collection",
+      "saved_media": [
+        { "href": "https://www.instagram.com/p/ABC123/" }
+      ]
+    },
+    {
+      "string_map_data": { "Name": { "value": "Legacy Named" } },
+      "saved_media": [
+        {
+          "string_map_data": {
+            "Saved on": { "href": "https://www.instagram.com/reel/XYZ789/" }
+          }
+        }
+      ]
+    },
+    {
+      "saved_media": []
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "saved_collections_v2": [
+    {
+      "label_values": [
+        { "label": "Name", "value": "New Collection" },
+        {
+          "dict": [
+            {
+              "dict": [
+                { "label": "URL", "href": "https://www.instagram.com/p/NEW001/" }
+              ]
+            },
+            {
+              "dict": [
+                { "label": "URL", "href": "https://www.instagram.com/tv/NEW002/" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label_values": [
+        { "label": "Caption", "value": "unnamed collection, no Name label" }
+      ]
+    }
+  ]
+}

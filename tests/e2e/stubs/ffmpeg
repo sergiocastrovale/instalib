@@ -1,0 +1,7 @@
+#!/usr/bin/env node
+// Minimal e2e stub: answers version probes, fails fast on everything else.
+if (process.argv.includes('-version')) {
+  console.log('ffmpeg version 6.0.0 e2e-stub')
+  process.exit(0)
+}
+process.exit(1)

@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+// Minimal e2e stub: answers version probes, fails fast on everything else
+// (real downloads/resolution/cover-fetch) so no real network I/O ever happens.
+if (process.argv.includes('--version')) {
+  console.log('2024.01.01')
+  process.exit(0)
+}
+process.exit(1)

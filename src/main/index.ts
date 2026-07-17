@@ -5,7 +5,7 @@ import { createWindow } from './window'
 import { registerMediaSchemePrivileges, registerMediaProtocol } from './protocol'
 import { installCdnHeaderOverrides } from './cdn-headers'
 import { registerAllIpc } from './ipc/index'
-import { getDb } from './db/index'
+import { getDb, closeDb } from './db/index'
 import { getSettings } from './db/settings'
 import { listVideosNeedingCover, resetStaleDownloads } from './db/videos'
 import { startCoverFetch, isCoverFetchRunning } from './services/covers'
@@ -52,6 +52,7 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   requestStop()
+  closeDb()
 })
 
 if (is.dev) {

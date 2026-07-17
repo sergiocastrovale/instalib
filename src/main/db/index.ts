@@ -15,6 +15,11 @@ export function getDb(): Database.Database {
   return db
 }
 
+export function closeDb(): void {
+  db?.close()
+  db = null
+}
+
 export function getDbInfo(): { engine: string; sqliteVersion: string; schemaVersion: number } {
   const database = getDb()
   const { v } = database.prepare('select sqlite_version() as v').get() as { v: string }

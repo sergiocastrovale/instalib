@@ -10,7 +10,7 @@ const REFRESH_MARGIN_MS = 10 * 60 * 1000 // 10min
 
 const inFlight = new Map<string, Promise<PlaybackSource>>()
 
-function parseExpiryFromUrl(url: string): number {
+export function parseExpiryFromUrl(url: string): number {
   const match = /[?&]oe=([0-9a-fA-F]+)/.exec(url)
   if (!match) return Date.now() + FALLBACK_TTL_MS
   const expiresSec = parseInt(match[1], 16)
