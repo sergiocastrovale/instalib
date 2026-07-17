@@ -1,5 +1,9 @@
 <template>
-  <div v-if="!video" class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
+  <div v-if="notFound" class="flex flex-col items-center gap-2 py-16 text-center">
+    <p class="text-lg font-semibold">Video not found</p>
+    <p class="text-sm text-muted-foreground">It may have been deleted.</p>
+  </div>
+  <div v-else-if="!video" class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
     <div class="flex flex-col gap-4">
       <Skeleton class="aspect-video w-full rounded-lg" />
       <Skeleton class="h-6 w-1/3" />
@@ -131,9 +135,15 @@ const fromOrigin = computed(() => (route.query.from === 'search' ? 'search' : 'h
 
 const video = ref<VideoDto | null>(null)
 const collections = ref<CollectionDto[]>([])
+const notFound = ref(false)
 
 async function loadVideoData(): Promise<void> {
-  video.value = await window.api.videosGet(videoId.value)
+  const requestedId = videoId.value
+  notFound.value = false
+  const result = await window.api.videosGet(requestedId)
+  if (videoId.value !== requestedId) return
+  video.value = result
+  notFound.value = result === null
 }
 
 const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
