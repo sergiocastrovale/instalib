@@ -69,9 +69,11 @@ export function usePlayer() {
 
   async function applySource(force = false): Promise<void> {
     if (!state.video) return
+    const videoId = state.video.id
     state.resolving = true
     state.sourceError = null
-    const result = await window.api.playerResolve(state.video.id, force)
+    const result = await window.api.playerResolve(videoId, force)
+    if (state.video?.id !== videoId) return
     state.resolving = false
     state.source = result.source
     state.sourceError = result.error ?? null
@@ -79,6 +81,7 @@ export function usePlayer() {
     if (result.source === 'embed') return
 
     await nextTick()
+    if (state.video?.id !== videoId) return
     const el = videoEl.value
     if (!el) return
     el.src = result.url
