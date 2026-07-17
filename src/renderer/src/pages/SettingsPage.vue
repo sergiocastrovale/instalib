@@ -209,22 +209,30 @@ const removeCovers = ref(true)
 const purging = ref(false)
 
 async function load(): Promise<void> {
-  const [s, b, d, t, db] = await Promise.all([
-    window.api.settingsGet(),
-    window.api.settingsDetectBrowsers(),
-    window.api.settingsDataLocation(),
-    window.api.setupStatus(),
-    window.api.dbInfo()
-  ])
-  settings.value = s
-  browsers.value = b
-  toolStatus.value = t
-  dataLocation.value = d
-  dbInfo.value = db
+  try {
+    const [s, b, d, t, db] = await Promise.all([
+      window.api.settingsGet(),
+      window.api.settingsDetectBrowsers(),
+      window.api.settingsDataLocation(),
+      window.api.setupStatus(),
+      window.api.dbInfo()
+    ])
+    settings.value = s
+    browsers.value = b
+    toolStatus.value = t
+    dataLocation.value = d
+    dbInfo.value = db
+  } catch {
+    toast.error('Failed to load settings')
+  }
 }
 
 async function refreshCoverStatus(): Promise<void> {
-  coverStatus.value = await window.api.coverFetchStatus()
+  try {
+    coverStatus.value = await window.api.coverFetchStatus()
+  } catch (err) {
+    console.error('Failed to refresh cover status', err)
+  }
 }
 
 const coverStatusText = computed(() => {

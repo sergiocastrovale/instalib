@@ -22,7 +22,7 @@ Fix items in order below. Each is self-contained: location, problem, fix directi
 - [x] `src/renderer/src/pages/WatchPage.vue:135-137,212` (`loadVideoData` + `watch(videoId)`) — Unguarded concurrent fetches: fast navigation between videos can resolve out of order, leaving `video.value` set to a stale video. Also `videosGet` returning null (deleted video) shows the loading skeleton forever with no error state. Fix: add ordering guard (id check after await) + not-found UI state.
 - [x] `src/main/services/importer.ts:16-36` — Synchronous `readFileSync`/`AdmZip` on main thread freezes IPC/UI during large import; malformed JSON inside a ZIP throws raw uncaught `SyntaxError` (try/catch only covers the non-ZIP branch). Fix: move parse off main thread or chunk it; wrap ZIP branch in try/catch with a user-facing error.
 - [x] `src/renderer/src/router.ts:18-26` (`beforeEach`) — `await window.api.setupStatus()` has no try/catch; rejection aborts navigation and strands the user. Fix: wrap in try/catch with fallback route/state.
-- [ ] `src/renderer/src/pages/SettingsPage.vue:211-224,239-243` — `load()`/`refreshCoverStatus()` called unawaited in `onMounted`, no error handling → unhandled rejections, null state, no user feedback. Fix: wrap in try/catch with error state (do alongside P2 settings composable extraction below).
+- [x] `src/renderer/src/pages/SettingsPage.vue:211-224,239-243` — `load()`/`refreshCoverStatus()` called unawaited in `onMounted`, no error handling → unhandled rejections, null state, no user feedback. Fix: wrap in try/catch with error state (do alongside P2 settings composable extraction below).
 
 ## P2 — Slimness: pages → components/composables
 
