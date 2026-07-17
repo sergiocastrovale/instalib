@@ -1,6 +1,6 @@
 import { unlink } from 'node:fs/promises'
 import { listVideoFilePaths, purgeAllVideoData } from '../db/videos'
-import { requestStop } from './downloader'
+import { requestStop, waitForSyncStop } from './downloader'
 import { requestCoverStop } from './covers'
 import type { PurgeOptions } from '@shared/types'
 
@@ -15,6 +15,7 @@ export async function unlinkQuiet(path: string): Promise<void> {
 export async function purgeDatabase(opts: PurgeOptions): Promise<{ ok: true }> {
   requestStop()
   requestCoverStop()
+  await waitForSyncStop()
 
   const rows = listVideoFilePaths()
 

@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process'
+import { spawn, type ChildProcess } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -12,6 +12,7 @@ import type { SyncEvent } from '@shared/types'
 let running = false
 let stopRequested = false
 let currentVideoId: string | null = null
+let currentProc: ChildProcess | null = null
 let completedCount = 0
 let totalCount = 0
 const recentLogs: string[] = []
@@ -37,6 +38,18 @@ export function getSyncStatus(): { running: boolean; currentVideoId: string | nu
 
 export function requestStop(): void {
   stopRequested = true
+  currentProc?.kill()
+}
+
+export function waitForSyncStop(): Promise<void> {
+  if (!running) return Promise.resolve()
+  return new Promise((resolve) => {
+    const check = (): void => {
+      if (!running) return resolve()
+      setTimeout(check, 50)
+    }
+    check()
+  })
 }
 
 function sleep(ms: number): Promise<void> {
@@ -65,6 +78,7 @@ function pushLog(message: string): void {
 function runYtDlp(args: string[]): Promise<{ code: number; stderr: string }> {
   return new Promise((resolve) => {
     const proc = spawn(ytDlpPath(), args)
+    currentProc = proc
     let stderr = ''
     let buffer = ''
     const handleChunk = (d: Buffer): void => {
@@ -82,10 +96,14 @@ function runYtDlp(args: string[]): Promise<{ code: number; stderr: string }> {
       handleChunk(d)
     })
     proc.on('close', (code) => {
+      if (currentProc === proc) currentProc = null
       if (buffer.trim()) pushLog(buffer.trim())
       resolve({ code: code ?? 1, stderr })
     })
-    proc.on('error', (err: Error) => resolve({ code: 1, stderr: String(err) }))
+    proc.on('error', (err: Error) => {
+      if (currentProc === proc) currentProc = null
+      resolve({ code: 1, stderr: String(err) })
+    })
   })
 }
 

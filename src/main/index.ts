@@ -9,6 +9,7 @@ import { getDb } from './db/index'
 import { getSettings } from './db/settings'
 import { listVideosNeedingCover, resetStaleDownloads } from './db/videos'
 import { startCoverFetch, isCoverFetchRunning } from './services/covers'
+import { requestStop } from './services/downloader'
 import { resolvePortableDataDir } from './portable'
 
 const portableDataDir = resolvePortableDataDir()
@@ -47,6 +48,10 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
+})
+
+app.on('before-quit', () => {
+  requestStop()
 })
 
 if (is.dev) {
