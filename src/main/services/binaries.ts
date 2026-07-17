@@ -110,10 +110,17 @@ async function findFileRecursive(dir: string, basename: string): Promise<string 
 export async function ensureYtDlp(onProgress: ProgressCb): Promise<void> {
   if (existsSync(ytDlpPath())) return
   onProgress({ binary: 'yt-dlp', pct: 0, phase: 'downloading' })
-  await downloadToFile(ytDlpDownloadUrl(), ytDlpPath(), (pct) =>
-    onProgress({ binary: 'yt-dlp', pct, phase: 'downloading' })
-  )
-  if (process.platform !== 'win32') chmodSync(ytDlpPath(), 0o755)
+  const tmpPath = `${ytDlpPath()}.tmp`
+  try {
+    await downloadToFile(ytDlpDownloadUrl(), tmpPath, (pct) =>
+      onProgress({ binary: 'yt-dlp', pct, phase: 'downloading' })
+    )
+    if (process.platform !== 'win32') chmodSync(tmpPath, 0o755)
+    await rename(tmpPath, ytDlpPath())
+  } catch (err) {
+    await rm(tmpPath, { force: true })
+    throw err
+  }
   onProgress({ binary: 'yt-dlp', pct: 100, phase: 'done' })
 }
 
