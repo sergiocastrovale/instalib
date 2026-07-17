@@ -161,29 +161,32 @@ async function downloadOne(video: { id: string; shortcode: string; permalink: st
   emit({ type: 'progress', videoId: video.id, message: 'downloaded' })
 }
 
-function findNextPending(syncUncategorized: boolean): { id: string; shortcode: string; permalink: string; author: string | null } | null {
+function findNextPending(
+  syncUncategorized: boolean,
+  collectionId?: string
+): { id: string; shortcode: string; permalink: string; author: string | null } | null {
   const db = getDb()
-  const scope = getSyncScopeWhere(syncUncategorized)
+  const scope = getSyncScopeWhere(syncUncategorized, collectionId)
   const row = db
     .prepare(
       `SELECT v.id, v.shortcode, v.permalink, v.author FROM videos v
        WHERE v.status = 'pending' AND ${scope}
        ORDER BY v.saved_at DESC LIMIT 1`
     )
-    .get() as { id: string; shortcode: string; permalink: string; author: string | null } | undefined
+    .get({ collectionId }) as { id: string; shortcode: string; permalink: string; author: string | null } | undefined
   return row ?? null
 }
 
-function countPending(syncUncategorized: boolean): number {
+function countPending(syncUncategorized: boolean, collectionId?: string): number {
   const db = getDb()
-  const scope = getSyncScopeWhere(syncUncategorized)
+  const scope = getSyncScopeWhere(syncUncategorized, collectionId)
   const row = db
     .prepare(`SELECT COUNT(*) AS c FROM videos v WHERE v.status = 'pending' AND ${scope}`)
-    .get() as { c: number }
+    .get({ collectionId }) as { c: number }
   return row.c
 }
 
-export async function startSync(): Promise<void> {
+export async function startSync(collectionId?: string): Promise<void> {
   if (running) return
   running = true
   stopRequested = false
@@ -191,12 +194,12 @@ export async function startSync(): Promise<void> {
 
   const settings = getSettings()
   await mkdir(settings.syncFolder, { recursive: true })
-  totalCount = countPending(settings.syncUncategorized)
+  totalCount = countPending(settings.syncUncategorized, collectionId)
 
   try {
     while (!stopRequested) {
       const freshSettings = getSettings()
-      const next = findNextPending(freshSettings.syncUncategorized)
+      const next = findNextPending(freshSettings.syncUncategorized, collectionId)
       if (!next) break
 
       setDownloadResult(next.id, { status: 'downloading' })
@@ -216,7 +219,7 @@ export async function startSync(): Promise<void> {
       }
 
       completedCount++
-      const remaining = countPending(freshSettings.syncUncategorized)
+      const remaining = countPending(freshSettings.syncUncategorized, collectionId)
       totalCount = completedCount + remaining
       emit({ type: 'queue', completed: completedCount, total: totalCount })
 

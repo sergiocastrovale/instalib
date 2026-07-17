@@ -111,7 +111,10 @@ export function getDownloadedCounts(): Record<string, number> {
   return Object.fromEntries(rows.map((r) => [r.collectionId, r.cnt]))
 }
 
-export function getSyncScopeWhere(syncUncategorized: boolean): string {
+export function getSyncScopeWhere(syncUncategorized: boolean, collectionId?: string): string {
+  if (collectionId) {
+    return `EXISTS (SELECT 1 FROM collection_videos cv WHERE cv.video_id = v.id AND cv.collection_id = @collectionId)`
+  }
   return syncUncategorized
     ? `(EXISTS (SELECT 1 FROM collection_videos cv JOIN collections c ON c.id = cv.collection_id
          WHERE cv.video_id = v.id AND c.sync_enabled = 1)

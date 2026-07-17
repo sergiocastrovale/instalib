@@ -50,8 +50,8 @@ export function registerAllIpc(mainWindow: BrowserWindow): void {
     resolvePlayback(videoId, force ?? false)
   )
 
-  ipcMain.handle(IPC.syncStart, async () => {
-    if (!isSyncRunning()) startSync()
+  ipcMain.handle(IPC.syncStart, async (_e, opts?: { collectionId?: string }) => {
+    if (!isSyncRunning()) startSync(opts?.collectionId)
   })
   ipcMain.handle(IPC.syncStop, () => requestStop())
   ipcMain.handle(IPC.syncStatus, () => getSyncStatus())
