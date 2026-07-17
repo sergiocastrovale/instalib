@@ -7,6 +7,7 @@ import { getVideo, setDownloadResult } from '../db/videos'
 import { getSyncScopeWhere } from '../db/collections'
 import { getSettings } from '../db/settings'
 import { ytDlpPath, ffmpegPath } from './binaries'
+import { unlinkQuiet } from './fs-utils'
 import type { SyncEvent } from '@shared/types'
 
 let running = false
@@ -14,6 +15,7 @@ let stopRequested = false
 let currentVideoId: string | null = null
 let currentProc: ChildProcess | null = null
 let completedCount = 0
+let failedCount = 0
 let totalCount = 0
 const recentLogs: string[] = []
 
@@ -32,8 +34,14 @@ export function isSyncRunning(): boolean {
   return running
 }
 
-export function getSyncStatus(): { running: boolean; currentVideoId: string | null; completed: number; total: number } {
-  return { running, currentVideoId, completed: completedCount, total: totalCount }
+export function getSyncStatus(): {
+  running: boolean
+  currentVideoId: string | null
+  completed: number
+  total: number
+  failed: number
+} {
+  return { running, currentVideoId, completed: completedCount, total: totalCount, failed: failedCount }
 }
 
 export function requestStop(): void {
@@ -136,6 +144,7 @@ async function downloadOne(video: { id: string; shortcode: string; permalink: st
   if (code !== 0 || !existsSync(mp4Path)) {
     const noVideo = /no video formats found|is not a video|carousel|Requested content is not available/i.test(stderr)
     const status = noVideo ? 'skipped' : 'failed'
+    await Promise.all([unlinkQuiet(mp4Path), unlinkQuiet(jpgPath), unlinkQuiet(infoPath)])
     setDownloadResult(video.id, { status, error: stderr.slice(-2000) || 'Unknown yt-dlp error' })
     emit({ type: 'progress', videoId: video.id, message: status })
     return
@@ -191,6 +200,7 @@ export async function startSync(collectionId?: string): Promise<void> {
   running = true
   stopRequested = false
   completedCount = 0
+  failedCount = 0
 
   const settings = getSettings()
   await mkdir(settings.syncFolder, { recursive: true })
@@ -219,9 +229,10 @@ export async function startSync(collectionId?: string): Promise<void> {
       }
 
       completedCount++
+      if (!done) failedCount++
       const remaining = countPending(freshSettings.syncUncategorized, collectionId)
       totalCount = completedCount + remaining
-      emit({ type: 'queue', completed: completedCount, total: totalCount })
+      emit({ type: 'queue', completed: completedCount, total: totalCount, failed: failedCount })
 
       if (stopRequested) break
       await sleep(jitterDelay())

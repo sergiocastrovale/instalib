@@ -5,6 +5,7 @@ interface SyncProgressState {
   running: boolean
   completed: number
   total: number
+  failed: number
   currentVideoId: string | null
   logs: string[]
 }
@@ -13,6 +14,7 @@ const state = reactive<SyncProgressState>({
   running: false,
   completed: 0,
   total: 0,
+  failed: 0,
   currentVideoId: null,
   logs: []
 })
@@ -25,6 +27,7 @@ export function useSyncProgress() {
     state.running = status.running
     state.completed = status.completed
     state.total = status.total
+    state.failed = status.failed
     state.currentVideoId = status.currentVideoId
   }
 
@@ -34,6 +37,7 @@ export function useSyncProgress() {
     } else if (e.type === 'queue') {
       state.completed = e.completed ?? state.completed
       state.total = e.total ?? state.total
+      state.failed = e.failed ?? state.failed
     } else if (e.type === 'log') {
       state.logs.push(e.message ?? '')
       if (state.logs.length > 3) state.logs.shift()

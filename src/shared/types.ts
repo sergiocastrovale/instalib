@@ -67,6 +67,7 @@ export interface SyncEvent {
   message?: string
   completed?: number
   total?: number
+  failed?: number
 }
 
 export interface SetupProgressEvent {
@@ -88,6 +89,7 @@ export interface SyncStatus {
   currentVideoId: string | null
   completed: number
   total: number
+  failed: number
 }
 
 export interface CoverFetchStatus {

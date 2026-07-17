@@ -1,5 +1,5 @@
 import { deleteCollectionAndOrphanVideos } from '../db/collections'
-import { unlinkQuiet } from './purge'
+import { unlinkQuiet } from './fs-utils'
 
 export async function deleteCollection(collectionId: string): Promise<{ ok: true }> {
   const orphans = deleteCollectionAndOrphanVideos(collectionId)
