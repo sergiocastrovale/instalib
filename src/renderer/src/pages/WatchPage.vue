@@ -123,6 +123,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { formatDate, formatDuration } from '@/lib/format'
 import { shuffleArray, useQueue } from '@/composables/useQueue'
 import { usePlayer } from '@/composables/usePlayer'
+import { usePlayerHotkeys } from '@/composables/usePlayerHotkeys'
 import { router } from '@/router'
 import NotesPanel from '@/components/NotesPanel.vue'
 import Breadcrumbs, { type BreadcrumbItem } from '@/components/Breadcrumbs.vue'
@@ -217,75 +218,12 @@ watch(dockSlot, (el) => {
 }, { immediate: true })
 
 onMounted(() => {
-  window.addEventListener('keydown', onKeydown)
   window.api.collectionsList().then((c) => (collections.value = c))
 })
 
 onUnmounted(() => {
   player.state.dockEl = null
-  window.removeEventListener('keydown', onKeydown)
 })
 
-function onKeydown(e: KeyboardEvent): void {
-  const target = e.target as HTMLElement
-  if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return
-
-  switch (e.key.toLowerCase()) {
-    case ' ':
-    case 'k':
-      e.preventDefault()
-      player.toggle()
-      break
-    case 'arrowleft':
-      player.seekBy(-5)
-      break
-    case 'arrowright':
-      player.seekBy(5)
-      break
-    case 'j':
-      player.seekBy(-10)
-      break
-    case 'l':
-      player.seekBy(10)
-      break
-    case 'arrowup':
-      e.preventDefault()
-      player.setVolume(player.state.volume + 0.1)
-      break
-    case 'arrowdown':
-      e.preventDefault()
-      player.setVolume(player.state.volume - 0.1)
-      break
-    case '[':
-      player.setSpeed(player.state.speed - 0.25)
-      break
-    case ']':
-      player.setSpeed(player.state.speed + 0.25)
-      break
-    case 'n':
-      player.playNextInQueue()
-      break
-    case 'p':
-      player.playPrevInQueue()
-      break
-    case 'm':
-      player.toggleMuted()
-      break
-    case 'f':
-      player.videoEl.value?.requestFullscreen?.().catch(() => {})
-      break
-    case 'a':
-      player.setLoopA()
-      break
-    case 'b':
-      player.setLoopB()
-      break
-    case 's':
-      player.toggleFavorite()
-      break
-    case '?':
-      showShortcuts.value = true
-      break
-  }
-}
+usePlayerHotkeys(player, () => (showShortcuts.value = true))
 </script>
