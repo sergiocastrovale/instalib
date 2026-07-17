@@ -39,7 +39,7 @@ Fix items in order below. Each is self-contained: location, problem, fix directi
 - [x] Breadcrumb assembly duplicated at `WatchPage.vue:139-150` and `CollectionPage.vue:105-108` — extract `useBreadcrumbs(listId, from)` helper.
 - [x] `LibraryPage.vue:92-108` — Move `continueWatching` selection and `mostRecentCoverId` cover-picking logic into library store/composable; extract search-results markup (:8-30) into a `SearchResults` component.
 - [x] `App.vue:12-50` — Extract header (search input, theme toggle, settings link, GitHub button) into a `TopBar` component.
-- [ ] `SetupPage.vue:45-68` — (low priority) extract install orchestration + IPC progress subscription into `useSetupInstall()`, mirroring `useSyncProgress`.
+- [x] `SetupPage.vue:45-68` — (low priority) extract install orchestration + IPC progress subscription into `useSetupInstall()`, mirroring `useSyncProgress`.
 
 ## P3 — Low severity bugs / edge cases
 
