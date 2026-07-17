@@ -15,6 +15,24 @@ export const useLibraryStore = defineStore('library', () => {
   const totalVideoCount = computed(() => videos.value.length)
   const favoritesCount = computed(() => videos.value.filter((v) => v.favorite).length)
 
+  function mostRecentCoverId(list: VideoDto[]): string | null {
+    return (
+      [...list]
+        .filter((v) => v.thumbPath)
+        .sort((a, b) => b.savedAt - a.savedAt)[0]?.id ?? null
+    )
+  }
+
+  const allSavedCoverVideoId = computed(() => mostRecentCoverId(videos.value))
+  const favoritesCoverVideoId = computed(() => mostRecentCoverId(videos.value.filter((v) => v.favorite)))
+
+  const continueWatching = computed(() =>
+    videos.value
+      .filter((v) => v.positionSec > 5 && v.durationSec && v.positionSec / v.durationSec < 0.95)
+      .sort((a, b) => (b.lastPlayedAt ?? 0) - (a.lastPlayedAt ?? 0))
+      .slice(0, 10)
+  )
+
   let pendingRefresh: Promise<void> | null = null
 
   function refresh(): Promise<void> {
@@ -56,6 +74,9 @@ export const useLibraryStore = defineStore('library', () => {
     sidebarCollapsed,
     totalVideoCount,
     favoritesCount,
+    allSavedCoverVideoId,
+    favoritesCoverVideoId,
+    continueWatching,
     refresh,
     toggleSidebar,
     deleteCollection

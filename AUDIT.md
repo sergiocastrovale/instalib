@@ -37,7 +37,7 @@ Fix items in order below. Each is self-contained: location, problem, fix directi
 - [x] `SettingsPage.vue:16-109` and `:111-146` — Extract `SetupSettings.vue` and `DataSettings.vue` tabs (model: existing `components/settings/DownloadsSettings.vue`); move `load()`/polling/business logic (:211-277) into a `useSettingsData`/`useCoverStatus` composable (pattern already established in `useSyncProgress.ts`).
 - [x] `CollectionPage.vue:141-155,177-185` — Move delete-collection call and `playAll` (queue build + navigate) into composables (`playAll` belongs in `useQueue`); extract filter toolbar (:30-49) into `CollectionFilterBar` component.
 - [x] Breadcrumb assembly duplicated at `WatchPage.vue:139-150` and `CollectionPage.vue:105-108` — extract `useBreadcrumbs(listId, from)` helper.
-- [ ] `LibraryPage.vue:92-108` — Move `continueWatching` selection and `mostRecentCoverId` cover-picking logic into library store/composable; extract search-results markup (:8-30) into a `SearchResults` component.
+- [x] `LibraryPage.vue:92-108` — Move `continueWatching` selection and `mostRecentCoverId` cover-picking logic into library store/composable; extract search-results markup (:8-30) into a `SearchResults` component.
 - [ ] `App.vue:12-50` — Extract header (search input, theme toggle, settings link, GitHub button) into a `TopBar` component.
 - [ ] `SetupPage.vue:45-68` — (low priority) extract install orchestration + IPC progress subscription into `useSetupInstall()`, mirroring `useSyncProgress`.
 
