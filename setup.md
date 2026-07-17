@@ -12,12 +12,11 @@ Instagram doesn't let apps read your saved posts directly, so you export them yo
 6. Submit. Instagram emails you a download link, usually within an hour.
 7. Download the `.zip` file it gives you. Don't unzip it - Instalib reads it directly.
 
-## 2. Install Instalib
+## 2. Get Instalib
 
-- **Installer**: download it and run it like any program - it installs and adds a shortcut.
-- **Portable**: download the single file and double-click it. Nothing is installed;
-  a small folder appears next to it holding all your data. Great for a USB stick
-  or a computer you don't want to install anything on.
+Download the file for your OS and double-click it. Nothing is installed; a
+small folder appears next to it holding all your data. Great for a USB stick
+or a computer you don't want to install anything on.
 
 ## 3. First launch
 
@@ -80,7 +79,7 @@ your computer automatically - you'll see a "Downloaded" badge on it.
   (fewer controls, but still watchable).
 - **Mac says the app is "damaged" or can't be opened** - right-click the app →
   **Open**. If that option isn't there, open Terminal and run:
-  `xattr -dr com.apple.quarantine /Applications/Instalib.app`
+  `xattr -dr com.apple.quarantine /path/to/Instalib.app`
 - **Windows Defender / antivirus warning** - this is common for small independent
   apps without a paid certificate. Choose "More info" → "Run anyway" if you trust
   the source you downloaded it from.

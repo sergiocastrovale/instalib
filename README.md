@@ -16,11 +16,8 @@ Nothing you save is uploaded anywhere. Everything stays on your computer.
 
 ## Install
 
-Two ways to run Instalib — pick whichever you prefer:
-
-- **Installer** — the normal way. Download it, run it, it installs like any other app.
-- **Portable** — no installation. Download the single file, run it from anywhere (a USB
-  stick works fine). All its data stays in a folder right next to it.
+No installation needed. Download the single file, run it from anywhere (a USB
+stick works fine). All its data stays in a folder right next to it.
 
 New here? Read **[setup.md](./setup.md)** for a full walkthrough with pictures-in-words.
 

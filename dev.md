@@ -5,8 +5,8 @@ Build and package Instalib for Windows, macOS, and Linux.
 ## Requirements
 
 - Node 22+ and npm
-- No extra SDKs needed for plain development. Packaging installers has per-OS
-  caveats - see below.
+- No extra SDKs needed for plain development. Packaging portable builds has
+  per-OS caveats - see below.
 
 ## Setup
 
@@ -30,12 +30,12 @@ npx electron-builder install-app-deps
 ```bash
 npm run dev          # hot-reload dev window
 npm run typecheck    # main/preload (tsc) + renderer (vue-tsc)
-npm run build        # bundles to out/, no installer - fastest way to sanity check a build
+npm run build        # bundles to out/, no packaging - fastest way to sanity check a build
 ```
 
-## Package installers
+## Package portable builds
 
-Each installer format can only be built on its matching OS - this is an
+Each format can only be built on its matching OS - this is an
 electron-builder / OS-tooling limitation, not something this project works
 around. Cross-building Windows from Linux is possible with `wine` installed,
 but isn't set up or tested here; macOS builds require a real Mac (Apple's
@@ -44,12 +44,12 @@ CI matrix (GitHub Actions with `ubuntu-latest` / `windows-latest` /
 `macos-latest` runners, each running its own `npm ci && npm run dist:<os>`).
 
 ```bash
-npm run dist:linux   # AppImage (portable) + .deb (installer)
-npm run dist:win     # portable .exe + NSIS installer
-npm run dist:mac     # .zip (portable) + .dmg
+npm run dist:linux   # AppImage (portable)
+npm run dist:win     # portable .exe
+npm run dist:mac     # .zip (portable)
 ```
 
-For fast local iteration without building a full installer:
+For fast local iteration without building a full package:
 
 ```bash
 # or --mac / --linux
@@ -72,10 +72,6 @@ chmod +x dist/Instalib-*.AppImage
 ./dist/Instalib-*.AppImage
 # If it errors about FUSE (common in containers/WSL):
 ./dist/Instalib-*.AppImage --appimage-extract-and-run
-
-# .deb - installs it properly, adds a menu entry
-sudo apt install ./dist/instalib_*_amd64.deb
-instalib
 ```
 
 **Windows**
@@ -83,9 +79,6 @@ instalib
 ```powershell
 # Portable - just run it, nothing installed
 dist\Instalib-*-portable.exe
-
-# NSIS installer - run it, follow the prompts, then launch from Start Menu
-dist\Instalib-*-setup.exe
 ```
 SmartScreen will warn it's unrecognized (unsigned) - "More info" → "Run anyway".
 
@@ -95,12 +88,9 @@ SmartScreen will warn it's unrecognized (unsigned) - "More info" → "Run anyway
 # .zip - unzip, then run the .app directly (portable, no install)
 unzip dist/Instalib-*-mac.zip -d dist/
 open dist/Instalib.app
-
-# .dmg - open it, drag Instalib to Applications, then launch normally
-open dist/Instalib-*.dmg
 ```
 Gatekeeper will block the unsigned app first launch - right-click → **Open**,
-or if that option is missing (macOS 15+): `xattr -dr com.apple.quarantine /Applications/Instalib.app`
+or if that option is missing (macOS 15+): `xattr -dr com.apple.quarantine /path/to/Instalib.app`
 
 First launch on any OS downloads yt-dlp + ffmpeg automatically (needs internet, ~1-2 min, one-time).
 
@@ -135,9 +125,6 @@ These are real issues hit while building this app - not hypotheticals.
   `productName`.** Ours is lowercase `instalib`, so the OS profile path is
   `~/.config/instalib` (Linux), not `~/.config/Instalib`. Don't assume the
   capitalized product name when hunting for the data directory by hand.
-- **electron-builder's `deb` target requires `author.email` and
-  `homepage`** in `package.json` - build fails otherwise with a metadata
-  error, only when packaging `deb`/`rpm` (not `AppImage`).
 - **Portable mode relies on env vars electron-builder's runtime sets**:
   `PORTABLE_EXECUTABLE_DIR` (Windows portable target) and `APPIMAGE` (Linux
   AppImage). `src/main/portable.ts` reads these to relocate
