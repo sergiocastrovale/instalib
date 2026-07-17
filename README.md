@@ -28,7 +28,7 @@ Think of this like your own personal Youtube for Instagram saved content, with a
 
 ## Installation
 
-1. Download the release file, run it from anywhere.
+1. Download the [latest release](https://github.com/sergiocastrovale/instalib/releases) file, run it from anywhere.
 
 2. On the first run, SQLite (Database) will be set up, and `yt-dlp` + `ffmpeg` will download automatically.
 
