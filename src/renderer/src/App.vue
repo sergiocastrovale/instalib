@@ -8,7 +8,7 @@
     </div>
     <div class="flex min-h-0 flex-1">
       <AppSidebar v-if="route.name !== 'setup'" />
-      <div class="flex min-h-0 flex-1 flex-col">
+      <div class="flex min-w-0 min-h-0 flex-1 flex-col">
         <TopBar v-if="route.name !== 'setup'" />
         <div class="flex-1 overflow-y-auto">
           <main

@@ -1,6 +1,9 @@
 <template>
-  <RouterLink :to="href" class="group flex items-center gap-3.5 rounded-lg p-2.5 hover:bg-accent">
-    <div class="relative aspect-video w-40 shrink-0 overflow-hidden rounded-md border bg-muted">
+  <RouterLink
+    :to="href"
+    class="group flex flex-wrap items-center gap-x-3.5 gap-y-2 rounded-lg p-2.5 hover:bg-accent sm:flex-nowrap"
+  >
+    <div class="relative aspect-video w-28 shrink-0 overflow-hidden rounded-md border bg-muted sm:w-40">
       <img
         v-if="video.thumbPath"
         :src="`app-media://thumb/${video.id}`"
@@ -17,9 +20,9 @@
     <div class="min-w-0 flex-1">
       <p class="truncate text-sm font-medium">{{ video.author ?? video.shortcode }}</p>
       <p class="truncate text-xs text-muted-foreground">{{ video.caption || 'No caption' }}</p>
-      <p class="mt-0.5 text-xs text-muted-foreground">Saved {{ formatDate(video.savedAt) }}</p>
+      <p class="mt-0.5 truncate text-xs text-muted-foreground">Saved {{ formatDate(video.savedAt) }}</p>
     </div>
-    <div class="flex shrink-0 items-center gap-1.5">
+    <div class="flex w-full shrink-0 items-center gap-1.5 sm:w-auto">
       <SourceBadge :source="video.filePath ? 'local' : 'web'" />
       <CheckCircle2Icon v-if="video.watched" class="size-4 text-emerald-500" />
       <HeartIcon v-if="video.favorite" class="size-4 text-destructive" fill="currentColor" />

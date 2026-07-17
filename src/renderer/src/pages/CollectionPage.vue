@@ -2,12 +2,12 @@
   <div class="flex flex-col gap-4">
     <Breadcrumbs :items="breadcrumbItems" />
 
-    <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
       <div>
         <h1 class="text-[31.2px] font-bold tracking-[-0.02em]">{{ title }}</h1>
         <p class="text-[15.6px] text-muted-foreground">{{ filtered.length }} video{{ filtered.length === 1 ? '' : 's' }}</p>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2">
         <Button :disabled="!filtered.length" @click="playAll(false)">
           <PlayIcon class="size-4" /> Play all
         </Button>

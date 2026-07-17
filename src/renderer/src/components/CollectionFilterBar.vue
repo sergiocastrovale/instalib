@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-wrap items-center gap-3">
-    <div class="relative max-w-xs flex-1">
+    <div class="relative w-full sm:w-auto sm:max-w-xs sm:flex-1">
       <SearchIcon class="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
       <Input
         :model-value="search"
@@ -10,14 +10,14 @@
       />
     </div>
     <Select :model-value="authorFilter" @update:model-value="$emit('update:authorFilter', String($event))">
-      <SelectTrigger class="h-[38px] w-44"><SelectValue placeholder="All authors" /></SelectTrigger>
+      <SelectTrigger class="h-[38px] flex-1 sm:w-44 sm:flex-none"><SelectValue placeholder="All authors" /></SelectTrigger>
       <SelectContent>
         <SelectItem value="all">All authors</SelectItem>
         <SelectItem v-for="a in authors" :key="a" :value="a">{{ a }}</SelectItem>
       </SelectContent>
     </Select>
     <Select :model-value="sortBy" @update:model-value="$emit('update:sortBy', String($event))">
-      <SelectTrigger class="h-[38px] w-44"><SelectValue /></SelectTrigger>
+      <SelectTrigger class="h-[38px] flex-1 sm:w-44 sm:flex-none"><SelectValue /></SelectTrigger>
       <SelectContent>
         <SelectItem value="savedAt_desc">Newest saved</SelectItem>
         <SelectItem value="savedAt_asc">Oldest saved</SelectItem>
