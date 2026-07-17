@@ -65,7 +65,7 @@
 
       <!-- Full controls -->
       <div v-else class="flex flex-col gap-2 border-t bg-card p-3">
-        <div class="group relative h-3 cursor-pointer" @click="onTrackClick" @mousedown="scrubbing = true" @mouseup="scrubbing = false">
+        <div class="group relative h-3 cursor-pointer" @click="onTrackClick">
           <div class="absolute inset-y-1 w-full rounded-full bg-secondary" />
           <div class="absolute inset-y-1 left-0 rounded-full bg-muted-foreground/40" :style="{ width: bufferedPct + '%' }" />
           <div class="absolute inset-y-1 left-0 rounded-full bg-primary" :style="{ width: playedPct + '%' }" />
@@ -223,7 +223,6 @@ const {
 const queue = useQueue()
 
 const speedOptions = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
-const scrubbing = ref(false)
 
 const mini = computed(() => !state.dockEl)
 const teleportTarget = computed(() => state.dockEl ?? 'body')
