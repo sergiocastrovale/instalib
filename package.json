@@ -1,6 +1,6 @@
 {
   "name": "instalib",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Native desktop app for browsing and playing your Instagram saved videos",
   "main": "./out/main/index.js",
   "author": {
