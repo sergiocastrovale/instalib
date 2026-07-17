@@ -95,6 +95,7 @@ import { useSearchStore } from '@/stores/search'
 import { useLibraryStore } from '@/stores/library'
 import { router } from '@/router'
 import { listQuery } from '@/lib/listQuery'
+import { useVideoFilters } from '@/composables/useVideoFilters'
 import type { CollectionDto, VideoDto } from '@shared/types'
 
 const route = useRoute()
@@ -153,24 +154,10 @@ async function doRemoveCollection(): Promise<void> {
   }
 }
 
-const authorFilter = ref('all')
-const sortBy = ref('savedAt_desc')
-
-const authors = computed(() => [...new Set(videos.value.map((v) => v.author).filter((a): a is string => Boolean(a)))])
-
-const filtered = computed(() => {
-  let list = videos.value
-  if (authorFilter.value !== 'all') list = list.filter((v) => v.author === authorFilter.value)
-  const q = search.collectionFilter.trim().toLowerCase()
-  if (q) list = list.filter((v) => v.author?.toLowerCase().includes(q) || v.caption?.toLowerCase().includes(q))
-  const [field, dir] = sortBy.value.split('_') as ['savedAt', 'asc' | 'desc']
-  list = [...list].sort((a, b) => {
-    const av = a[field]
-    const bv = b[field]
-    return dir === 'asc' ? av - bv : bv - av
-  })
-  return list
-})
+const { authorFilter, sortBy, authors, filtered } = useVideoFilters(
+  videos,
+  computed(() => search.collectionFilter)
+)
 
 const queue = useQueue()
 async function playAll(shuffle: boolean): Promise<void> {
