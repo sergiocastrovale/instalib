@@ -26,10 +26,10 @@
           <p class="text-sm text-muted-foreground">Saved {{ formatDate(video.savedAt) }}</p>
         </div>
         <div class="flex items-center gap-2">
-          <Button size="sm" variant="outline" :class="{ 'text-destructive': video.favorite }" @click="toggleFavorite">
+          <Button size="sm" variant="outline" :class="{ 'text-destructive': video.favorite }" @click="player.toggleFavorite">
             <HeartIcon class="size-4" :fill="video.favorite ? 'currentColor' : 'none'" /> {{ video.favorite ? 'Favorited' : 'Favorite' }}
           </Button>
-          <Button size="sm" variant="outline" :class="{ 'text-primary': video.watched }" @click="toggleWatched">
+          <Button size="sm" variant="outline" :class="{ 'text-primary': video.watched }" @click="player.toggleWatched">
             <CheckCircle2Icon class="size-4" /> {{ video.watched ? 'Watched' : 'Mark watched' }}
           </Button>
           <Button size="sm" variant="outline" @click="openOnInstagram">
@@ -41,7 +41,7 @@
 
       <p v-if="video.caption && !player.state.focusMode" class="whitespace-pre-line rounded-lg border p-3 text-sm text-muted-foreground">{{ video.caption }}</p>
 
-      <NotesPanel v-if="!player.state.focusMode" :model-value="video.notes" @save="onSaveNotes" />
+      <NotesPanel v-if="!player.state.focusMode" :model-value="video.notes" @save="player.saveNotes" />
     </div>
 
     <aside v-if="!player.state.focusMode" class="flex flex-col gap-3">
@@ -196,24 +196,6 @@ function shuffleQueue(): void {
   }
 }
 
-async function toggleWatched(): Promise<void> {
-  if (!video.value) return
-  video.value.watched = !video.value.watched
-  await window.api.videosPatch(video.value.id, { watched: video.value.watched })
-}
-
-async function toggleFavorite(): Promise<void> {
-  if (!video.value) return
-  video.value.favorite = !video.value.favorite
-  await window.api.videosPatch(video.value.id, { favorite: video.value.favorite })
-}
-
-async function onSaveNotes(notes: string): Promise<void> {
-  if (!video.value) return
-  video.value.notes = notes
-  await window.api.videosPatch(video.value.id, { notes })
-}
-
 async function openOnInstagram(): Promise<void> {
   if (!video.value) return
   await window.api.shellOpenExternal(video.value.permalink)
@@ -299,7 +281,7 @@ function onKeydown(e: KeyboardEvent): void {
       player.setLoopB()
       break
     case 's':
-      toggleFavorite()
+      player.toggleFavorite()
       break
     case '?':
       showShortcuts.value = true

@@ -193,6 +193,13 @@ export function usePlayer() {
     await window.api.videosPatch(state.video.id, { watched: true }).catch(() => {})
   }
 
+  async function toggleWatched(): Promise<void> {
+    if (!state.video) return
+    const next = !state.video.watched
+    state.video.watched = next
+    await window.api.videosPatch(state.video.id, { watched: next }).catch(() => {})
+  }
+
   async function toggleFavorite(): Promise<void> {
     if (!state.video) return
     const next = !state.video.favorite
@@ -303,6 +310,7 @@ export function usePlayer() {
     toggleAudioOnly,
     toggleFocusMode,
     markWatched,
+    toggleWatched,
     toggleFavorite,
     saveNotes,
     playNextInQueue,

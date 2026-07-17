@@ -26,7 +26,7 @@ Fix items in order below. Each is self-contained: location, problem, fix directi
 
 ## P2 — Slimness: pages → components/composables
 
-- [ ] `WatchPage.vue:189-205` — Delete duplicated `toggleWatched`/`toggleFavorite`/`onSaveNotes`; delegate to existing `usePlayer.markWatched/toggleFavorite/saveNotes` (`usePlayer.ts:187-204`) instead of page holding its own `video` ref.
+- [x] `WatchPage.vue:189-205` — Delete duplicated `toggleWatched`/`toggleFavorite`/`onSaveNotes`; delegate to existing `usePlayer.markWatched/toggleFavorite/saveNotes` (`usePlayer.ts:187-204`) instead of page holding its own `video` ref.
 - [ ] `WatchPage.vue:237-298` — Extract ~60-line keyboard handler (`onKeydown` + listener wiring at :227-235) into a `usePlayerHotkeys(player)` composable; all branches already delegate to `player.*`. Also fix while here: ArrowLeft/Right and J/L seek shortcuts missing `e.preventDefault()` (:247-258), letting them scroll the page.
 - [ ] `WatchPage.vue:159-187` — Move `ensureQueue`/`loadQueueVideos`/`shuffleQueue` and queue video objects into `useQueue` (page currently keeps a manually-synced local `queueVideos` ref — should live in the composable).
 - [ ] `WatchPage.vue:43-80` — Extract "Up next" sidebar list into `QueueList`/`QueueItem` components (overlaps existing `VideoRow`/`VideoCard`, should reuse their look).
