@@ -75,7 +75,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { PlayIcon, SquareIcon } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 import { Button } from '@/components/ui/button'
@@ -161,5 +161,13 @@ async function retry(id: string): Promise<void> {
 watch(() => sync.state.running, (isRunning, wasRunning) => {
   if (wasRunning && !isRunning) refreshAll()
 })
-watch(() => sync.state.completed, () => refreshCounts())
+
+let refreshCountsTimer: ReturnType<typeof setTimeout> | null = null
+watch(() => sync.state.completed, () => {
+  if (refreshCountsTimer) clearTimeout(refreshCountsTimer)
+  refreshCountsTimer = setTimeout(refreshCounts, 500)
+})
+onBeforeUnmount(() => {
+  if (refreshCountsTimer) clearTimeout(refreshCountsTimer)
+})
 </script>
