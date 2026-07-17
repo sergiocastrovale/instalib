@@ -135,27 +135,23 @@ export interface UpsertVideoInput {
   savedAt: number
 }
 
-export function upsertVideo(input: UpsertVideoInput): string {
+export function upsertVideo(input: UpsertVideoInput): { id: string; inserted: boolean } {
   const db = getDb()
-  const existing = db
-    .prepare('SELECT id FROM videos WHERE shortcode = ?')
-    .get(input.shortcode) as { id: string } | undefined
-
-  if (existing) {
-    db.prepare(
-      `UPDATE videos SET permalink = @permalink, author = COALESCE(@author, author),
-       caption = COALESCE(@caption, caption), updated_at = @updatedAt WHERE id = @id`
-    ).run({ ...input, id: existing.id, updatedAt: Date.now() })
-    return existing.id
-  }
-
   const id = randomUUID()
   const now = Date.now()
-  db.prepare(
-    `INSERT INTO videos (id, shortcode, permalink, author, caption, saved_at, created_at, updated_at)
-     VALUES (@id, @shortcode, @permalink, @author, @caption, @savedAt, @createdAt, @updatedAt)`
-  ).run({ ...input, id, createdAt: now, updatedAt: now })
-  return id
+  const row = db
+    .prepare(
+      `INSERT INTO videos (id, shortcode, permalink, author, caption, saved_at, created_at, updated_at)
+       VALUES (@id, @shortcode, @permalink, @author, @caption, @savedAt, @createdAt, @updatedAt)
+       ON CONFLICT(shortcode) DO UPDATE SET
+         permalink = excluded.permalink,
+         author = COALESCE(excluded.author, videos.author),
+         caption = COALESCE(excluded.caption, videos.caption),
+         updated_at = excluded.updated_at
+       RETURNING id, created_at AS createdAt`
+    )
+    .get({ ...input, id, createdAt: now, updatedAt: now }) as { id: string; createdAt: number }
+  return { id: row.id, inserted: row.createdAt === now }
 }
 
 export function setResolvedUrl(id: string, url: string, expiresAt: number): void {

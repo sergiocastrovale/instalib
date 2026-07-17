@@ -49,10 +49,7 @@ export async function importFromPath(filePath: string): Promise<ImportResult> {
 
   const runImport = db.transaction(() => {
     for (const item of items) {
-      const existingId = db
-        .prepare('SELECT id FROM videos WHERE shortcode = ?')
-        .get(item.shortcode) as { id: string } | undefined
-      const id = upsertVideo({
+      const { id, inserted } = upsertVideo({
         shortcode: item.shortcode,
         permalink: item.permalink,
         author: item.author ?? null,
@@ -60,8 +57,8 @@ export async function importFromPath(filePath: string): Promise<ImportResult> {
         savedAt: item.savedAt.getTime()
       })
       shortcodeToId.set(item.shortcode, id)
-      if (existingId) updated++
-      else imported++
+      if (inserted) imported++
+      else updated++
     }
 
     let collectionsLinked = 0
