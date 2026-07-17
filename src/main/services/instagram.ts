@@ -27,7 +27,7 @@ function toDate(timestamp: unknown): Date {
 
 /**
  * Newer Instagram exports (2025+) nest everything under a "label_values" tree
- * instead of "string_map_data" — same data, different envelope. This walks a
+ * instead of "string_map_data" - same data, different envelope. This walks a
  * label_values array to find the { label: "URL", href } entry.
  */
 function findHrefInLabelValues(items: unknown): string | undefined {

@@ -2,7 +2,7 @@
   <Card>
     <CardHeader>
       <CardTitle>Import more</CardTitle>
-      <CardDescription>Upload a fresh export .zip — already-saved videos are updated, not duplicated.</CardDescription>
+      <CardDescription>Upload a fresh export .zip - already-saved videos are updated, not duplicated.</CardDescription>
     </CardHeader>
     <CardContent>
       <ImportDropzone @imported="lib.refresh" />

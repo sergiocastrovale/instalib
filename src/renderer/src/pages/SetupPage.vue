@@ -4,7 +4,7 @@
     <div>
       <h1 class="text-xl font-semibold">Setting up Instalib</h1>
       <p class="text-sm text-muted-foreground">
-        Downloading yt-dlp and ffmpeg — needed to play and download your saved Instagram videos.
+        Downloading yt-dlp and ffmpeg - needed to play and download your saved Instagram videos.
       </p>
     </div>
 

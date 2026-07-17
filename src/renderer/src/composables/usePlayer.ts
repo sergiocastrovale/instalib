@@ -122,7 +122,7 @@ export function usePlayer() {
       try {
         await el.play()
       } catch {
-        // autoplay blocked — user can hit play manually
+        // autoplay blocked - user can hit play manually
       }
     }
   }

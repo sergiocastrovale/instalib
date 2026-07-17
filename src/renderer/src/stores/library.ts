@@ -68,7 +68,7 @@ export const useLibraryStore = defineStore('library', () => {
     try {
       localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed.value ? '1' : '0')
     } catch {
-      // sandboxed/private-browsing-like context — in-memory state still updates
+      // sandboxed/private-browsing-like context - in-memory state still updates
     }
   }
 

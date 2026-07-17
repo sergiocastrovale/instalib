@@ -156,7 +156,7 @@ async function downloadOne(video: { id: string; shortcode: string; permalink: st
       const info = JSON.parse(await readFile(infoPath, 'utf-8'))
       durationSec = typeof info.duration === 'number' ? info.duration : null
     } catch {
-      // info.json missing/unparsable — keep whatever metadata we already have
+      // info.json missing/unparsable - keep whatever metadata we already have
     }
   }
 

@@ -7,7 +7,7 @@
     <textarea
       v-model="text"
       rows="6"
-      placeholder="Notes for this tutorial — chords, timestamps, technique cues…"
+      placeholder="Notes for this tutorial - chords, timestamps, technique cues…"
       class="w-full resize-y rounded-lg border bg-transparent p-2 text-sm outline-none focus:ring-1 focus:ring-ring"
       @input="onInput"
     />

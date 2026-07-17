@@ -23,7 +23,7 @@
   <Card>
     <CardHeader>
       <CardTitle>yt-dlp</CardTitle>
-      <CardDescription>Instagram changes often break video resolution — keep yt-dlp updated.</CardDescription>
+      <CardDescription>Instagram changes often break video resolution - keep yt-dlp updated.</CardDescription>
     </CardHeader>
     <CardContent class="flex items-center justify-between">
       <span class="text-sm text-muted-foreground">
@@ -61,7 +61,7 @@
       <CardDescription>
         {{
           dataLocation?.portable
-            ? "Everything (database and downloaded tools) lives next to this executable — nothing was installed to your system."
+            ? "Everything (database and downloaded tools) lives next to this executable - nothing was installed to your system."
             : 'Database and downloaded tools live in your OS profile folder.'
         }}
       </CardDescription>
