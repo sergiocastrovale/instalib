@@ -4,13 +4,21 @@ import type { CollectionDto, VideoDto } from '@shared/types'
 
 const SIDEBAR_COLLAPSED_KEY = 'instalib.sidebar.collapsed'
 
+function readSidebarCollapsed(): boolean {
+  try {
+    return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
 export const useLibraryStore = defineStore('library', () => {
   const videos = ref<VideoDto[]>([])
   const collections = ref<CollectionDto[]>([])
   const loading = ref(true)
   const loaded = ref(false)
   const error = ref<string | null>(null)
-  const sidebarCollapsed = ref(localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1')
+  const sidebarCollapsed = ref(readSidebarCollapsed())
 
   const totalVideoCount = computed(() => videos.value.length)
   const favoritesCount = computed(() => videos.value.filter((v) => v.favorite).length)
@@ -57,7 +65,11 @@ export const useLibraryStore = defineStore('library', () => {
 
   function toggleSidebar(): void {
     sidebarCollapsed.value = !sidebarCollapsed.value
-    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed.value ? '1' : '0')
+    try {
+      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsed.value ? '1' : '0')
+    } catch {
+      // sandboxed/private-browsing-like context — in-memory state still updates
+    }
   }
 
   async function deleteCollection(id: string): Promise<void> {
