@@ -98,8 +98,8 @@ export function resolvePlayback(videoId: string, force = false): Promise<Playbac
     if (existing) return existing
   }
 
-  const promise = resolveFresh(videoId, force).finally(() => {
-    inFlight.delete(videoId)
+  const promise: Promise<PlaybackSource> = resolveFresh(videoId, force).finally(() => {
+    if (inFlight.get(videoId) === promise) inFlight.delete(videoId)
   })
   inFlight.set(videoId, promise)
   return promise
