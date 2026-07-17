@@ -1,7 +1,7 @@
 import { listVideoFilePaths, purgeAllVideoData } from '../db/videos'
 import { requestStop, waitForSyncStop } from './downloader'
 import { requestCoverStop } from './covers'
-import { unlinkQuiet } from './fs-utils'
+import { unlinkQuiet, infoJsonPath } from './fs-utils'
 import type { PurgeOptions } from '@shared/types'
 
 export async function purgeDatabase(opts: PurgeOptions): Promise<{ ok: true }> {
@@ -15,7 +15,7 @@ export async function purgeDatabase(opts: PurgeOptions): Promise<{ ok: true }> {
   for (const row of rows) {
     if (opts.removeVideos && row.filePath) {
       deletions.push(unlinkQuiet(row.filePath))
-      deletions.push(unlinkQuiet(row.filePath.replace(/\.mp4$/, '.info.json')))
+      deletions.push(unlinkQuiet(infoJsonPath(row.filePath)))
     }
     if (opts.removeCovers && row.thumbPath) {
       deletions.push(unlinkQuiet(row.thumbPath))

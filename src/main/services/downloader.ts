@@ -160,13 +160,19 @@ async function downloadOne(video: { id: string; shortcode: string; permalink: st
     }
   }
 
+  const newThumbPath = existsSync(jpgPath) ? jpgPath : null
+  const previousThumbPath = newThumbPath ? getVideo(video.id)?.thumbPath : null
+
   setDownloadResult(video.id, {
     status: 'downloaded',
     filePath: mp4Path,
-    thumbPath: existsSync(jpgPath) ? jpgPath : null,
+    thumbPath: newThumbPath,
     durationSec,
     error: null
   })
+  if (previousThumbPath && previousThumbPath !== newThumbPath) {
+    await unlinkQuiet(previousThumbPath)
+  }
   emit({ type: 'progress', videoId: video.id, message: 'downloaded' })
 }
 

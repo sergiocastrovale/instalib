@@ -1,5 +1,5 @@
 import { deleteCollectionAndOrphanVideos } from '../db/collections'
-import { unlinkQuiet } from './fs-utils'
+import { unlinkQuiet, infoJsonPath } from './fs-utils'
 
 export async function deleteCollection(collectionId: string): Promise<{ ok: true }> {
   const orphans = deleteCollectionAndOrphanVideos(collectionId)
@@ -8,7 +8,7 @@ export async function deleteCollection(collectionId: string): Promise<{ ok: true
   for (const orphan of orphans) {
     if (orphan.filePath) {
       deletions.push(unlinkQuiet(orphan.filePath))
-      deletions.push(unlinkQuiet(orphan.filePath.replace(/\.mp4$/, '.info.json')))
+      deletions.push(unlinkQuiet(infoJsonPath(orphan.filePath)))
     }
     if (orphan.thumbPath) {
       deletions.push(unlinkQuiet(orphan.thumbPath))
