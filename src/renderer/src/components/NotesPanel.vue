@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onBeforeUnmount } from 'vue'
 
 const props = defineProps<{ modelValue: string }>()
 const emit = defineEmits<{ save: [value: string] }>()
@@ -25,12 +25,24 @@ const saving = ref(false)
 const saved = ref(false)
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
+function flushPending(): void {
+  if (!debounceTimer) return
+  clearTimeout(debounceTimer)
+  debounceTimer = null
+  emit('save', text.value)
+  saving.value = false
+  saved.value = true
+}
+
 watch(
   () => props.modelValue,
   (v) => {
+    flushPending()
     if (v !== text.value) text.value = v
   }
 )
+
+onBeforeUnmount(flushPending)
 
 function onInput(): void {
   saved.value = false
