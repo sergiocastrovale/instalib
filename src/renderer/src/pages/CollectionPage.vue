@@ -66,6 +66,7 @@ import Breadcrumbs, { type BreadcrumbItem } from '@/components/Breadcrumbs.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import CollectionFilterBar from '@/components/CollectionFilterBar.vue'
 import { useQueue } from '@/composables/useQueue'
+import { useBreadcrumbs } from '@/composables/useBreadcrumbs'
 import { useSearchStore } from '@/stores/search'
 import { useLibraryStore } from '@/stores/library'
 import { router } from '@/router'
@@ -79,10 +80,8 @@ const search = useSearchStore()
 const lib = useLibraryStore()
 
 const fromOrigin = computed<string | undefined>(() => (route.query.from === 'search' ? 'search' : undefined))
-const breadcrumbItems = computed<BreadcrumbItem[]>(() => [
-  { label: fromOrigin.value === 'search' ? 'Search' : 'Home', to: '/' },
-  { label: title.value }
-])
+const { root } = useBreadcrumbs(fromOrigin)
+const breadcrumbItems = computed<BreadcrumbItem[]>(() => [root.value, { label: title.value }])
 
 const videos = ref<VideoDto[]>([])
 const collections = ref<CollectionDto[]>([])

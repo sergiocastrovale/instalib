@@ -71,6 +71,7 @@ import { formatDate } from '@/lib/format'
 import { useQueue } from '@/composables/useQueue'
 import { usePlayer } from '@/composables/usePlayer'
 import { usePlayerHotkeys } from '@/composables/usePlayerHotkeys'
+import { useBreadcrumbs } from '@/composables/useBreadcrumbs'
 import NotesPanel from '@/components/NotesPanel.vue'
 import Breadcrumbs, { type BreadcrumbItem } from '@/components/Breadcrumbs.vue'
 import QueueList from '@/components/QueueList.vue'
@@ -95,9 +96,9 @@ async function loadVideoData(): Promise<void> {
   notFound.value = result === null
 }
 
+const { root } = useBreadcrumbs(fromOrigin)
 const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
-  const rootLabel = fromOrigin.value === 'search' ? 'Search' : 'Home'
-  const items: BreadcrumbItem[] = [{ label: rootLabel, to: '/' }]
+  const items: BreadcrumbItem[] = [root.value]
   if (listId.value === 'favorites') {
     items.push({ label: 'Favorites', to: '/collection/favorites' })
   } else if (listId.value !== 'all') {
