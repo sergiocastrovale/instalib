@@ -44,6 +44,6 @@ import Search from '@/components/Search.vue'
 import { currentTheme, toggleTheme } from '@/lib/theme'
 
 async function openGithub(): Promise<void> {
-  await window.api.shellOpenExternal('https://github.com/sergiocastrovale')
+  await window.api.shellOpenExternal('https://github.com/sergiocastrovale/instalib')
 }
 </script>

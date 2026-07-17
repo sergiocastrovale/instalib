@@ -23,8 +23,13 @@
           <div>
             <p class="font-medium">No videos imported yet</p>
             <p class="text-sm text-muted-foreground">Export your saved posts from Instagram, then drop the .zip below.</p>
+            <p>
+              <button type="button" class="text-sm text-primary hover:underline" @click="showExportHelp = true">
+                How do I do this?
+              </button>
+            </p>
           </div>
-          <div class="w-full max-w-md">
+          <div class="w-full max-w-md mt-4">
             <ImportDropzone @imported="lib.refresh" />
           </div>
         </div>
@@ -47,22 +52,26 @@
         </div>
       </section>
     </template>
+
+    <ExportInstructionsDialog v-model:open="showExportHelp" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { ClapperboardIcon } from '@lucide/vue'
 import { Skeleton } from '@/components/ui/skeleton'
 import VideoCard from '@/components/VideoCard.vue'
 import CollectionGrid from '@/components/CollectionGrid.vue'
 import ImportDropzone from '@/components/ImportDropzone.vue'
 import SearchResults from '@/components/SearchResults.vue'
+import ExportInstructionsDialog from '@/components/ExportInstructionsDialog.vue'
 import { useSearchStore } from '@/stores/search'
 import { useLibraryStore } from '@/stores/library'
 
 const search = useSearchStore()
 const lib = useLibraryStore()
+const showExportHelp = ref(false)
 
 onMounted(() => {
   if (!lib.loaded) lib.refresh()

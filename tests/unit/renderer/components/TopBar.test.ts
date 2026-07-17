@@ -30,6 +30,6 @@ describe('TopBar', () => {
     const wrapper = mountTopBar()
     const githubButton = wrapper.find('button[title="GitHub"]')
     await githubButton.trigger('click')
-    expect(window.api.shellOpenExternal).toHaveBeenCalledWith('https://github.com/sergiocastrovale')
+    expect(window.api.shellOpenExternal).toHaveBeenCalledWith('https://github.com/sergiocastrovale/instalib')
   })
 })
