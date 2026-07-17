@@ -43,7 +43,7 @@ Fix items in order below. Each is self-contained: location, problem, fix directi
 
 ## P3 — Low severity bugs / edge cases
 
-- [ ] `src/main/protocol.ts:54-59` — Range header `start`/`end` not clamped/validated; `start>end` possible from a bad `Range` header, and `kind = url.hostname` is unchecked (non-`thumb` host falls through). Fix: clamp to `[0,size-1]`, return 416 on invalid range, validate `kind`.
+- [x] `src/main/protocol.ts:54-59` — Range header `start`/`end` not clamped/validated; `start>end` possible from a bad `Range` header, and `kind = url.hostname` is unchecked (non-`thumb` host falls through). Fix: clamp to `[0,size-1]`, return 416 on invalid range, validate `kind`.
 - [ ] `src/main/ipc/index.ts:100` — `shell.openExternal` called on unvalidated renderer-supplied URL, no scheme allowlist. Fix: restrict to `http:`/`https:`.
 - [ ] `src/renderer/src/composables/usePlayer.ts:45-56,266-281` — Progress timer isn't stopped on `ended` (only on `pause`, which the spec doesn't fire at end-of-media); keeps persisting every 5s indefinitely when autoplay is off / queue exhausted. Fix: stop timer on `ended` too.
 - [ ] `usePlayer.ts:206-214` + `src/renderer/src/composables/useQueue.ts:29-33` — `queue.next()` advances `index` before fetching the video; if fetch fails/returns missing, index has already moved, desyncing queue position. Fix: only advance on confirmed success, or retry-in-place.

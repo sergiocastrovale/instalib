@@ -20,7 +20,10 @@ export function registerMediaProtocol(): void {
   protocol.handle('app-media', async (request) => {
     const url = new URL(request.url)
     // app-media://video/<id> or app-media://thumb/<id>
-    const kind = url.hostname as 'video' | 'thumb'
+    if (url.hostname !== 'video' && url.hostname !== 'thumb') {
+      return new Response('Not found', { status: 404 })
+    }
+    const kind = url.hostname
     const id = url.pathname.replace(/^\//, '')
 
     const video = getVideo(id)
@@ -52,17 +55,25 @@ export function registerMediaProtocol(): void {
     }
 
     const match = /bytes=(\d*)-(\d*)/.exec(range)
-    const start = match?.[1] ? parseInt(match[1], 10) : 0
-    const end = match?.[2] ? parseInt(match[2], 10) : size - 1
-    const chunkSize = end - start + 1
+    if (!match) {
+      return new Response('Range Not Satisfiable', { status: 416, headers: { 'Content-Range': `bytes */${size}` } })
+    }
+    const start = match[1] ? parseInt(match[1], 10) : 0
+    const end = match[2] ? parseInt(match[2], 10) : size - 1
+    const clampedStart = Math.max(0, Math.min(start, size - 1))
+    const clampedEnd = Math.max(clampedStart, Math.min(end, size - 1))
+    if (start > end || start >= size) {
+      return new Response('Range Not Satisfiable', { status: 416, headers: { 'Content-Range': `bytes */${size}` } })
+    }
+    const chunkSize = clampedEnd - clampedStart + 1
 
-    const stream = Readable.toWeb(createReadStream(path, { start, end })) as ReadableStream
+    const stream = Readable.toWeb(createReadStream(path, { start: clampedStart, end: clampedEnd })) as ReadableStream
     return new Response(stream, {
       status: 206,
       headers: {
         'Content-Type': mime,
         'Content-Length': String(chunkSize),
-        'Content-Range': `bytes ${start}-${end}/${size}`,
+        'Content-Range': `bytes ${clampedStart}-${clampedEnd}/${size}`,
         'Accept-Ranges': 'bytes'
       }
     })
