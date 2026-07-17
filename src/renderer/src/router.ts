@@ -18,9 +18,13 @@ export const router = createRouter({
 router.beforeEach(async (to) => {
   navigating.value = true
   if (to.name === 'setup') return true
-  const status = await window.api.setupStatus()
-  if (!status.ytDlp || !status.ffmpeg) {
-    return { name: 'setup' }
+  try {
+    const status = await window.api.setupStatus()
+    if (!status.ytDlp || !status.ffmpeg) {
+      return { name: 'setup' }
+    }
+  } catch (err) {
+    console.error('setupStatus check failed, allowing navigation', err)
   }
   return true
 })
