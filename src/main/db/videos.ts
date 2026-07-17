@@ -116,8 +116,11 @@ export function patchVideo(id: string, patch: VideoPatch): VideoDto | null {
   }
   if (fields.length === 0) return getVideo(id)
 
-  fields.push('last_played_at = @lastPlayedAt', 'updated_at = @updatedAt')
-  params.lastPlayedAt = Date.now()
+  if (patch.positionSec !== undefined) {
+    fields.push('last_played_at = @lastPlayedAt')
+    params.lastPlayedAt = Date.now()
+  }
+  fields.push('updated_at = @updatedAt')
   params.updatedAt = Date.now()
 
   db.prepare(`UPDATE videos SET ${fields.join(', ')} WHERE id = @id`).run(params)

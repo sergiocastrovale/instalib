@@ -14,7 +14,7 @@ Fix items in order below. Each is self-contained: location, problem, fix directi
 
 ## P1 — Medium severity bugs
 
-- [ ] `src/main/db/videos.ts:117-124` (`patchVideo`) — Any patch (favorite toggle, notes edit) unconditionally bumps `last_played_at = now`, corrupting "recently played" ordering. Fix: only bump `last_played_at` for actual playback-position patches, not favorite/notes/watched.
+- [x] `src/main/db/videos.ts:117-124` (`patchVideo`) — Any patch (favorite toggle, notes edit) unconditionally bumps `last_played_at = now`, corrupting "recently played" ordering. Fix: only bump `last_played_at` for actual playback-position patches, not favorite/notes/watched.
 - [ ] `src/main/services/downloader.ts:146-157` + `src/main/index.ts:29-37` — Rows stuck in `status='downloading'` after a crash/force-quit are never recovered; `findNextPending` only selects `pending`. Fix: on app startup, reset stale `downloading` rows back to `pending`.
 - [ ] `src/main/services/downloader.ts:38-40,65-90,192-198` — `requestStop()` only checked between videos/attempts; a running yt-dlp child is never killed, orphaning processes on app quit. `purgeDatabase` calls `requestStop()` then deletes files immediately while a download may still be writing. Fix: keep handle to spawned `proc`, call `proc.kill()` on stop/quit; await confirmed stop before purge deletes files.
 - [ ] `src/main/ipc/index.ts:53-55` (+ `src/preload/index.ts:43`, `src/renderer/src/composables/useSyncProgress.ts:57`) — `syncStart({ collectionId })` sent by renderer but main handler takes no args and always syncs global scope (rename/refactor leftover). Collection-scoped sync silently syncs whole library instead. Fix: thread `collectionId` through the handler or remove the dead param from all three layers.
