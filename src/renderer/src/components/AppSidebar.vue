@@ -2,7 +2,7 @@
   <aside
     :class="
       cn(
-        'flex shrink-0 flex-col overflow-hidden border-r bg-rail py-3.5 transition-[width] duration-150 ease-linear',
+        'hidden shrink-0 flex-col overflow-hidden border-r bg-rail py-3.5 transition-[width] duration-150 ease-linear lg:flex',
         lib.sidebarCollapsed ? 'w-[60px] px-2.5' : 'w-[216px] px-3'
       )
     "

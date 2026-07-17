@@ -1,17 +1,13 @@
 <template>
   <header class="shrink-0 bg-background/95 backdrop-blur">
     <div class="flex min-h-[88px] items-center gap-4 px-6">
-      <div class="min-w-0 flex-1">
-        <div class="relative mx-auto w-full max-w-2xl">
-          <Input
-            v-model="search.query"
-            placeholder="Search for a video or collection"
-            class="h-14 rounded-full border-transparent bg-muted/50 pr-12 pl-6 text-base focus-visible:border-transparent focus-visible:ring-0"
-          />
-          <SearchIcon class="absolute right-5 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
+      <SidebarMobile />
+      <div class="hidden min-w-0 flex-1 lg:block">
+        <div class="mx-auto w-full max-w-2xl">
+          <Search />
         </div>
       </div>
-      <div class="flex shrink-0 items-center gap-1 text-muted-foreground">
+      <div class="ml-auto flex shrink-0 items-center gap-1 text-muted-foreground">
         <button
           class="flex size-9 items-center justify-center rounded-lg hover:bg-accent hover:text-foreground"
           title="Toggle theme"
@@ -41,13 +37,11 @@
 </template>
 
 <script setup lang="ts">
-import { MoonIcon, SearchIcon, SettingsIcon, SunIcon } from '@lucide/vue'
-import { Input } from '@/components/ui/input'
+import { MoonIcon, SettingsIcon, SunIcon } from '@lucide/vue'
 import GithubIcon from '@/components/icons/GithubIcon.vue'
-import { useSearchStore } from '@/stores/search'
+import SidebarMobile from '@/components/SidebarMobile.vue'
+import Search from '@/components/Search.vue'
 import { currentTheme, toggleTheme } from '@/lib/theme'
-
-const search = useSearchStore()
 
 async function openGithub(): Promise<void> {
   await window.api.shellOpenExternal('https://github.com/sergiocastrovale')

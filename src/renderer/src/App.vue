@@ -25,23 +25,13 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { Toaster } from 'vue-sonner'
-import { navigating, router } from './router'
+import { navigating } from './router'
 import PlayerDock from '@/components/player/PlayerDock.vue'
 import TitleBar from '@/components/TitleBar.vue'
 import AppSidebar from '@/components/AppSidebar.vue'
 import TopBar from '@/components/TopBar.vue'
-import { useSearchStore } from '@/stores/search'
 
 const route = useRoute()
-const search = useSearchStore()
-
-watch(
-  () => search.query,
-  (q) => {
-    if (q.trim() && route.name !== 'library') router.push('/')
-  }
-)
 </script>
