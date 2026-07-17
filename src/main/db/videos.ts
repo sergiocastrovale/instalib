@@ -64,8 +64,8 @@ export function listVideos(query: VideoListQuery): VideoDto[] {
     clauses.push('v.favorite = 1')
   }
   if (query.search) {
-    clauses.push('(v.author LIKE @search OR v.caption LIKE @search OR v.notes LIKE @search)')
-    params.search = `%${query.search}%`
+    clauses.push("(v.author LIKE @search ESCAPE '\\' OR v.caption LIKE @search ESCAPE '\\' OR v.notes LIKE @search ESCAPE '\\')")
+    params.search = `%${query.search.replace(/[\\%_]/g, '\\$&')}%`
   }
   if (query.status) {
     clauses.push('v.status = @status')
