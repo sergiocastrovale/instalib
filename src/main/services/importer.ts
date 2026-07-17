@@ -14,14 +14,18 @@ export async function importFromPath(filePath: string): Promise<ImportResult> {
   let collectionsJson: unknown = null
 
   if (lower.endsWith('.zip')) {
-    const zip = new AdmZip(filePath)
-    for (const entry of zip.getEntries()) {
-      const entryLower = entry.entryName.toLowerCase()
-      if (entryLower.endsWith('saved_posts.json')) {
-        postsJson = JSON.parse(zip.readAsText(entry))
-      } else if (entryLower.endsWith('saved_collections.json')) {
-        collectionsJson = JSON.parse(zip.readAsText(entry))
+    try {
+      const zip = new AdmZip(filePath)
+      for (const entry of zip.getEntries()) {
+        const entryLower = entry.entryName.toLowerCase()
+        if (entryLower.endsWith('saved_posts.json')) {
+          postsJson = JSON.parse(zip.readAsText(entry))
+        } else if (entryLower.endsWith('saved_collections.json')) {
+          collectionsJson = JSON.parse(zip.readAsText(entry))
+        }
       }
+    } catch {
+      throw new Error('File is not a valid export ZIP (corrupt archive or malformed JSON inside)')
     }
     if (!postsJson) {
       throw new Error('saved_posts.json not found in export ZIP')
