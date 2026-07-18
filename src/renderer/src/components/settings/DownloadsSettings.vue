@@ -82,9 +82,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import CollectionGrid from '@/components/CollectionGrid.vue'
 import { useSyncProgress } from '@/composables/useSyncProgress'
+import { useLibraryStore } from '@/stores/library'
 import type { CollectionDto, Settings, VideoDto } from '@shared/types'
 
 const sync = useSyncProgress()
+const library = useLibraryStore()
 
 const collections = ref<CollectionDto[]>([])
 const downloadedCounts = ref<Record<string, number>>({})
@@ -122,6 +124,8 @@ async function refreshCollections(): Promise<void> {
   const [list, dlCounts] = await Promise.all([window.api.collectionsList(), window.api.collectionsDownloadedCounts()])
   collections.value = list
   downloadedCounts.value = dlCounts
+  // sync_enabled in SQLite is the scope the downloader actually reads - keep the grid honest about it
+  selectedIds.value = list.filter((c) => c.syncEnabled).map((c) => c.id)
 }
 
 async function refreshAll(): Promise<void> {
@@ -130,6 +134,7 @@ async function refreshAll(): Promise<void> {
 
 onMounted(async () => {
   settings.value = await window.api.settingsGet()
+  allSelected.value = settings.value?.syncUncategorized ?? false
   await refreshAll()
 })
 
@@ -159,13 +164,16 @@ async function retry(id: string): Promise<void> {
 }
 
 watch(() => sync.state.running, (isRunning, wasRunning) => {
-  if (wasRunning && !isRunning) refreshAll()
+  if (wasRunning && !isRunning) {
+    refreshAll()
+    library.refresh()
+  }
 })
 
 let refreshCountsTimer: ReturnType<typeof setTimeout> | null = null
 watch(() => sync.state.completed, () => {
   if (refreshCountsTimer) clearTimeout(refreshCountsTimer)
-  refreshCountsTimer = setTimeout(refreshCounts, 500)
+  refreshCountsTimer = setTimeout(refreshAll, 500)
 })
 onBeforeUnmount(() => {
   if (refreshCountsTimer) clearTimeout(refreshCountsTimer)

@@ -22,22 +22,6 @@
 
   <Card>
     <CardHeader>
-      <CardTitle>yt-dlp</CardTitle>
-      <CardDescription>Instagram changes often break video resolution - keep yt-dlp updated.</CardDescription>
-    </CardHeader>
-    <CardContent class="flex items-center justify-between">
-      <span class="text-sm text-muted-foreground">
-        Version: <span class="font-mono">{{ toolStatus?.ytDlpVersion ?? 'unknown' }}</span>
-      </span>
-      <Button variant="outline" :disabled="updating" @click="updateYtDlp">
-        <Loader2Icon v-if="updating" class="size-4 animate-spin" />
-        Update yt-dlp
-      </Button>
-    </CardContent>
-  </Card>
-
-  <Card>
-    <CardHeader>
       <CardTitle>Sync folder</CardTitle>
       <CardDescription>Where synced videos are saved. Defaults to your OS Videos folder.</CardDescription>
     </CardHeader>
@@ -66,9 +50,18 @@
         }}
       </CardDescription>
     </CardHeader>
-    <CardContent class="space-y-3">
+    <CardContent>
       <Input :model-value="dataLocation?.path ?? ''" readonly class="bg-secondary font-mono text-xs" />
-      <div class="space-y-1.5 text-sm">
+    </CardContent>
+  </Card>
+
+  <Card>
+    <CardHeader>
+      <CardTitle>System checks</CardTitle>
+      <CardDescription>Database and required tools status.</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <div class="space-y-2 text-sm">
         <div class="flex items-center gap-2">
           <CheckIcon class="size-4 text-emerald-500" />
           <span>Database</span>
@@ -77,17 +70,22 @@
           </span>
         </div>
         <div class="flex items-center gap-2">
-          <CheckIcon v-if="toolStatus?.ytDlp" class="size-4 text-emerald-500" />
-          <XIcon v-else class="size-4 text-destructive" />
-          <span>yt-dlp</span>
-          <span v-if="toolStatus?.ytDlpVersion" class="font-mono text-xs text-muted-foreground">{{ toolStatus.ytDlpVersion }}</span>
-        </div>
-        <div class="flex items-center gap-2">
           <CheckIcon v-if="toolStatus?.ffmpeg" class="size-4 text-emerald-500" />
           <XIcon v-else class="size-4 text-destructive" />
           <span>ffmpeg</span>
           <span v-if="toolStatus?.ffmpegVersion" class="font-mono text-xs text-muted-foreground">{{ toolStatus.ffmpegVersion }}</span>
         </div>
+        <div class="flex items-center gap-2">
+          <CheckIcon v-if="toolStatus?.ytDlp" class="size-4 text-emerald-500" />
+          <XIcon v-else class="size-4 text-destructive" />
+          <span>yt-dlp</span>
+          <span v-if="toolStatus?.ytDlpVersion" class="font-mono text-xs text-muted-foreground">{{ toolStatus.ytDlpVersion }}</span>
+          <Button size="sm" variant="outline" class="h-6 px-2 text-xs" :disabled="updating" @click="updateYtDlp">
+            <Loader2Icon v-if="updating" class="size-4 animate-spin" />
+            Update
+          </Button>
+        </div>
+        <p class="pl-6 text-xs text-muted-foreground">Instagram changes often break video resolution - keep yt-dlp updated.</p>
       </div>
     </CardContent>
   </Card>
