@@ -80,16 +80,18 @@ release:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-Pulls all three matrix artifacts down and attaches them to a **draft** GitHub Release named after the tag. Draft so you can review/edit release notes before publishing — flip to `draft: false` if you want it auto-published.
+Pulls all three matrix artifacts down and attaches them to a **draft** GitHub Release named after the tag. The release body is not hand-written: the job checks out the repo and an `awk` step slices that version's section out of `CHANGELOG.md` into `RELEASE_NOTES.md`, passed as `body_path`. Missing section → the job fails rather than publishing an empty release. Draft so you can still review/edit before publishing — flip to `draft: false` if you want it auto-published.
 
 ## Cutting a release
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+npm run version:bump   # bumps package.json, regenerates CHANGELOG.md, commits, tags
+git push --follow-tags
 ```
 
-Push the tag → build matrix runs → draft release created with all 3 installers attached → review on GitHub → publish.
+Push the tag → build matrix runs → draft release created with all 3 installers attached and notes filled in from the changelog → review on GitHub → publish.
+
+Only Conventional Commits (`feat:`, `fix:`, `refactor:`, …) reach the changelog — see [dev.md](dev.md#changelog--releases).
 
 Or trigger manually without a tag via Actions tab → "Build" → "Run workflow" (artifacts only, no release job — that's gated on the tag ref).
 

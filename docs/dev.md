@@ -58,6 +58,23 @@ Produces an unpacked, runnable app under `dist/<platform>-unpacked/` in seconds 
 
 (End users hit the same prompts - see the main [README](../README.md) for the user-facing version of these steps.)
 
+## Changelog & releases
+
+`CHANGELOG.md` is generated from commit messages, so **write [Conventional Commits](https://www.conventionalcommits.org)** (`feat:`, `fix:`, `perf:`, `refactor:`, `build:`, `ci:`, `docs:`). `test:`/`style:`/`chore:` are deliberately hidden; anything not matching the format is dropped entirely.
+
+Cutting a release:
+
+```bash
+npm run version:bump   # minor - or version:bump:major
+git push --follow-tags
+```
+
+`npm version`'s `version` lifecycle hook runs `npm run changelog` and stages the result, so the new section lands *inside* the version commit that gets tagged.
+
+Pushing the `v*` tag triggers `.github/workflows/build.yml`: it builds all three installers, extracts that version's section from `CHANGELOG.md`, and opens a **draft** GitHub Release with those notes plus the artifacts. Review and publish it by hand.
+
+Regenerate without bumping: `npm run changelog` (append `-- -r 0` to rebuild the whole file from scratch). Section grouping lives in `changelog.config.mjs`.
+
 ## Quirks that will bite you
 
 - **nanoid v5 is ESM-only.** Requiring it from the main-process CJS bundle throws `ERR_REQUIRE_ESM` at runtime (only surfaces once packaged/run, not at typecheck time). We use `node:crypto`'s `randomUUID()` instead - don't reintroduce nanoid (or any ESM-only package) in `src/main`/`src/preload`.
@@ -65,4 +82,6 @@ Produces an unpacked, runnable app under `dist/<platform>-unpacked/` in seconds 
 - **Don't hand-restrict electron-builder's `files:` list.** A narrow whitelist here previously excluded `@electron-toolkit/utils`/`preload` from the packaged asar and crashed the built app on launch with `Cannot find module`. Let electron-builder's default dependency-tree walk include `dependencies` from `package.json` - only add `files` entries for things genuinely outside that (we only need it for `out/**`).
 - **userData folder name comes from `package.json`'s `name` field, not `productName`.** Ours is lowercase `instalib`, so the OS profile path is `~/.config/instalib` (Linux), not `~/.config/Instalib`. Don't assume the capitalized product name when hunting for the data directory by hand.
 - **Portable mode relies on env vars electron-builder's runtime sets**: `PORTABLE_EXECUTABLE_DIR` (Windows portable target) and `APPIMAGE` (Linux AppImage). `src/main/portable.ts` reads these to relocate `app.setPath('userData', ...)` next to the executable. This call **must** happen before `app.whenReady()` - Electron ignores `setPath` after ready.
+- **A non-conventional commit subject vanishes from the changelog.** Nothing enforces the format (no husky/commitlint here), so a `fixed the thing` commit ships fine but never appears in the release notes. Check `npm run changelog` output before tagging.
+- **`conventional-changelog-conventionalcommits` is pinned to v8.** v10 renders empty sections with `conventional-changelog-cli` v5 - headings appear, every commit is silently dropped. Don't let a dependency bump move it.
 - **better-sqlite3's compiled `.node` file must stay unpacked from the asar** (`asarUnpack: ['**/*.node']` in `electron-builder.yml`) - Node can't `dlopen()` a native binding from inside an asar archive.

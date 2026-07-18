@@ -8,6 +8,10 @@
     "email": "sergio.castro.vale@gmail.com"
   },
   "homepage": "https://instalib.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sergiocastrovale/instalib.git"
+  },
   "private": true,
   "scripts": {
     "dev": "electron-vite dev",
@@ -15,6 +19,8 @@
     "postinstall": "electron-builder install-app-deps",
     "version:bump": "npm version minor",
     "version:bump:major": "npm version major",
+    "changelog": "conventional-changelog -n ./changelog.config.mjs -i CHANGELOG.md -s",
+    "version": "npm run changelog && git add CHANGELOG.md",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
     "typecheck:web": "vue-tsc --noEmit -p tsconfig.web.json --composite false",
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
@@ -57,6 +63,8 @@
     "@vitejs/plugin-vue": "^5.2.4",
     "@vitest/coverage-v8": "^3.2.4",
     "@vue/test-utils": "^2.4.6",
+    "conventional-changelog-cli": "^5.0.0",
+    "conventional-changelog-conventionalcommits": "^8.0.0",
     "cross-env": "^7.0.3",
     "electron": "^33.4.11",
     "electron-builder": "^25.1.8",

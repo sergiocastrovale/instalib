@@ -51,14 +51,37 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v5
+
       - uses: actions/download-artifact@v5
         with:
           path: artifacts
+
+      - name: Extract release notes
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk -v ver="$VERSION" '
+            BEGIN { esc = ver; gsub(/\./, "\\.", esc) }
+            /^#{1,3} \[?[0-9]/ {
+              if (found) exit
+              head = $0
+              sub(/^#+ +\[?/, "", head)
+              if (head ~ "^" esc "([^0-9.]|$)") found = 1
+              next
+            }
+            found { print }
+          ' CHANGELOG.md > RELEASE_NOTES.md
+          if [ ! -s RELEASE_NOTES.md ]; then
+            echo "No CHANGELOG.md section for $VERSION" >&2
+            exit 1
+          fi
+          cat RELEASE_NOTES.md
 
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           files: artifacts/**/*
+          body_path: RELEASE_NOTES.md
           draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
