@@ -17,8 +17,6 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "postinstall": "electron-builder install-app-deps",
-    "version:bump": "npm version minor",
-    "version:bump:major": "npm version major",
     "changelog": "conventional-changelog -n ./changelog.config.mjs -i CHANGELOG.md -s",
     "version": "npm run changelog && git add CHANGELOG.md",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",

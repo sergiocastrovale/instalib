@@ -38,20 +38,20 @@ Note that the app is unsigned, so it will be flagged by some OS the first time y
 * Linux: run `chmod +x AppImage` first.
 * Windows: Windows SmartScreen blocks it on the first run. Just click `More info → Run anyway`.
 
+## Exporting from Instagram
+
+Instagram has no public API for saved posts, and Instalib doesn't scrape your account. The official data export is the only way to get your saved collections out - so every import starts here.
+
+1. Open Instagram (app or website) → go to your profile.
+2. **Accounts Center** → **Your information and permissions** → **Export your information**.
+3. Choose **Export to device**.
+4. Select **Some of your information**, then pick only **Saved**. Instalib does NOT read anything else.
+5. Set the format to **JSON** (not HTML), and date range to **All time**.
+6. Submit. Instagram emails you a download link, usually within an hour.
+7. Download the `.zip` file it gives you. Don't unzip it - Instalib reads it directly.
+8. Drag it to the importing panel and wait for the setup to finish.
+
 ## Importing your saved collections
-
-Instalib doesn't scrape your account - it reads the export file Instagram gives you when you ask for your own data. Here's how to get it and load it in.
-
-**On Instagram:**
-
-1. Open Instagram → Settings → Accounts Center → Your information and permissions → Export your information.
-2. Choose Create export → Some of your information.
-3. Scroll down and select just Saved. Instalib does NOT read anything else.
-4. Set format to **JSON** and date range to **All time**, then submit.
-5. Instagram will email you (usually within a few minutes, sometimes longer) with a download link.
-6. Download the ZIP file. You don't need to unzip it.
-
-**In Instalib:**
 
 1. Open the app and drop that ZIP file onto the import screen (or use the file picker).
 2. Wait for it to finish - it'll show how many videos were imported.

@@ -65,8 +65,8 @@ Produces an unpacked, runnable app under `dist/<platform>-unpacked/` in seconds 
 Cutting a release:
 
 ```bash
-npm run version:bump   # minor - or version:bump:major
-git push --follow-tags
+npm version minor      # or major / patch
+git push --tags
 ```
 
 `npm version`'s `version` lifecycle hook runs `npm run changelog` and stages the result, so the new section lands *inside* the version commit that gets tagged.

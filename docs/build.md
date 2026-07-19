@@ -85,7 +85,7 @@ Pulls all three matrix artifacts down and attaches them to a **draft** GitHub Re
 ## Cutting a release
 
 ```bash
-npm run version:bump   # bumps package.json, regenerates CHANGELOG.md, commits, tags
+npm version minor      # or major / patch - bumps package.json, regenerates CHANGELOG.md, commits, tags
 git push --follow-tags
 ```
 
