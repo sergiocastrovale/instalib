@@ -2,7 +2,10 @@
   <Card>
     <CardHeader>
       <CardTitle>Import more</CardTitle>
-      <CardDescription>Upload a fresh export .zip - already-saved videos are updated, not duplicated.</CardDescription>
+      <CardDescription>
+        Upload a fresh export .zip - already-saved videos are updated, not duplicated.
+        <ExportHelpLink />
+      </CardDescription>
     </CardHeader>
     <CardContent>
       <ImportDropzone @imported="lib.refresh" />
@@ -64,6 +67,7 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import ImportDropzone from '@/components/ImportDropzone.vue'
+import ExportHelpLink from '@/components/ExportHelpLink.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { useCoverStatus } from '@/composables/useCoverStatus'
 import { useLibraryStore } from '@/stores/library'
