@@ -1,3 +1,12 @@
+## [1.2.1](https://github.com/sergiocastrovale/instalib/compare/v1.2.0...v1.2.1) (2026-07-19)
+
+### Features
+
+* add export help link to import settings ([d42c87f](https://github.com/sergiocastrovale/instalib/commit/d42c87f90133270bef9f4dc9515729443ff5cfa9))
+
+### Documentation
+
+* update docs ([e437de8](https://github.com/sergiocastrovale/instalib/commit/e437de888434a51e7ef415f27cc06dd33d27aaa4))
 
 ## [1.2.0](https://github.com/sergiocastrovale/instalib/compare/v1.1.0...v1.2.0) (2026-07-18)
 
