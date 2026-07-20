@@ -18,6 +18,12 @@ if (portableDataDir) {
   app.setPath('userData', portableDataDir)
 }
 
+// Chromium logs benign media-probe errors (e.g. ffmpeg "Unsupported pixel format: -1")
+// at ERROR severity. 3 = FATAL only. INSTALIB_VERBOSE=1 restores full logging.
+if (!process.env.INSTALIB_VERBOSE) {
+  app.commandLine.appendSwitch('log-level', '3')
+}
+
 registerMediaSchemePrivileges()
 
 app.whenReady().then(() => {
