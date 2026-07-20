@@ -1,3 +1,9 @@
+## [1.3.0](https://github.com/sergiocastrovale/instalib/compare/v1.2.1...v1.3.0) (2026-07-20)
+
+### Features
+
+* add count-in and speed ramp to sections ([23a2f6c](https://github.com/sergiocastrovale/instalib/commit/23a2f6cf06e79a6bbeb36629c79bc45b831007e9))
+* replace A/B loop with named practice sections ([a797a47](https://github.com/sergiocastrovale/instalib/commit/a797a47b4bbf89734e39d249d0ca51dba7e4e01f))
 ## [1.2.1](https://github.com/sergiocastrovale/instalib/compare/v1.2.0...v1.2.1) (2026-07-19)
 
 ### Features
