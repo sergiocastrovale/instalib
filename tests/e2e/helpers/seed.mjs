@@ -38,7 +38,7 @@ const db = new Database(dbPath)
 db.pragma('journal_mode = WAL')
 db.pragma('foreign_keys = ON')
 
-// Mirrors src/main/db/migrations.ts's post-migration (v2) schema - the app's
+// Mirrors src/main/db/migrations.ts's post-migration (v3) schema - the app's
 // own migrations no-op once user_version is already at the latest version.
 db.exec(`
   CREATE TABLE videos (
@@ -58,6 +58,7 @@ db.exec(`
     watched INTEGER NOT NULL DEFAULT 0,
     favorite INTEGER NOT NULL DEFAULT 0,
     notes TEXT NOT NULL DEFAULT '',
+    sections TEXT NOT NULL DEFAULT '[]',
     resolved_url TEXT,
     resolved_url_expires_at INTEGER,
     last_played_at INTEGER,
@@ -90,7 +91,7 @@ db.exec(`
     value TEXT NOT NULL
   );
 `)
-db.pragma('user_version = 2')
+db.pragma('user_version = 3')
 
 const now = Date.now()
 const insertVideo = db.prepare(`

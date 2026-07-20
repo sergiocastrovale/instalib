@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { getDb } from './index'
-import type { VideoDto, VideoListQuery, VideoPatch, VideoStatus } from '@shared/types'
+import type { VideoDto, VideoListQuery, VideoPatch, VideoSection, VideoStatus } from '@shared/types'
 
 interface VideoRow {
   id: string
@@ -19,11 +19,21 @@ interface VideoRow {
   watched: number
   favorite: number
   notes: string
+  sections: string
   resolved_url: string | null
   resolved_url_expires_at: number | null
   last_played_at: number | null
   created_at: number
   updated_at: number
+}
+
+function parseSections(raw: string): VideoSection[] {
+  try {
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
 }
 
 function toDto(row: VideoRow): VideoDto {
@@ -44,6 +54,7 @@ function toDto(row: VideoRow): VideoDto {
     watched: !!row.watched,
     favorite: !!row.favorite,
     notes: row.notes,
+    sections: parseSections(row.sections),
     lastPlayedAt: row.last_played_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at
@@ -113,6 +124,10 @@ export function patchVideo(id: string, patch: VideoPatch): VideoDto | null {
   if (patch.notes !== undefined) {
     fields.push('notes = @notes')
     params.notes = patch.notes
+  }
+  if (patch.sections !== undefined) {
+    fields.push('sections = @sections')
+    params.sections = JSON.stringify(patch.sections)
   }
   if (fields.length === 0) return getVideo(id)
 

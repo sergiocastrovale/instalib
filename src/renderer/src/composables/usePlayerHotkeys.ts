@@ -15,7 +15,7 @@ export const PLAYER_SHORTCUTS: ShortcutRow[] = [
   { label: 'Next / previous', keys: 'N / P' },
   { label: 'Mute', keys: 'M' },
   { label: 'Fullscreen', keys: 'F' },
-  { label: 'Set loop A / B', keys: 'A / B' },
+  { label: 'Mark section start / end', keys: 'A / B' },
   { label: 'Favorite', keys: 'S' },
   { label: 'This help', keys: '?' }
 ]
@@ -74,10 +74,10 @@ export function usePlayerHotkeys(player: ReturnType<typeof usePlayer>, onHelp: (
         player.videoEl.value?.requestFullscreen?.().catch(() => {})
         break
       case 'a':
-        player.setLoopA()
+        player.startSection()
         break
       case 'b':
-        player.setLoopB()
+        player.addSection()
         break
       case 's':
         player.toggleFavorite()

@@ -67,20 +67,42 @@
       <div v-else class="flex flex-col gap-2 border-t bg-card p-3">
         <div class="group relative h-3 cursor-pointer" @click="onTrackClick">
           <div class="absolute inset-y-1 w-full rounded-full bg-secondary" />
-          <div class="absolute inset-y-1 left-0 rounded-full bg-muted-foreground/40" :style="{ width: bufferedPct + '%' }" />
-          <div class="absolute inset-y-1 left-0 rounded-full bg-primary" :style="{ width: playedPct + '%' }" />
+          <div class="pointer-events-none absolute inset-y-1 left-0 rounded-full bg-muted-foreground/40" :style="{ width: bufferedPct + '%' }" />
+          <div class="pointer-events-none absolute inset-y-1 left-0 rounded-full bg-primary" :style="{ width: playedPct + '%' }" />
+
           <div
-            v-if="state.loopA !== null"
-            class="absolute top-0 h-3 w-0.5 bg-yellow-400"
-            :style="{ left: pctOf(state.loopA) + '%' }"
+            v-for="(sec, i) in sections"
+            :key="sec.id"
+            class="absolute inset-y-0 z-10 cursor-pointer rounded-[2px]"
+            :style="{
+              left: pctOf(sec.start) + '%',
+              width: pctOf(sec.end) - pctOf(sec.start) + '%',
+              background: sectionColor(i) + '4d'
+            }"
+            @click.stop="onBandClick(sec)"
+            @mouseenter="hoveredId = sec.id"
+            @mouseleave="hoveredId = null"
+          >
+            <div class="absolute inset-y-0 left-0 w-0.5" :style="{ background: sectionColor(i) }" />
+            <div class="absolute inset-y-0 right-0 w-0.5" :style="{ background: sectionColor(i) }" />
+          </div>
+
+          <div
+            v-if="state.pendingStart !== null"
+            class="pointer-events-none absolute -top-0.5 z-20 h-4 w-0.5 bg-primary"
+            :style="{ left: pctOf(state.pendingStart) + '%' }"
           />
+
           <div
-            v-if="state.loopB !== null"
-            class="absolute top-0 h-3 w-0.5 bg-yellow-400"
-            :style="{ left: pctOf(state.loopB) + '%' }"
-          />
+            v-if="hoveredSection"
+            class="pointer-events-none absolute bottom-full z-40 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black px-2.5 py-1 text-sm font-medium text-white"
+            :style="{ left: pctOf(hoveredSection.start + (hoveredSection.end - hoveredSection.start) / 2) + '%' }"
+          >
+            {{ hoveredSection.name }}
+          </div>
+
           <div
-            class="absolute top-1/2 size-3 -translate-y-1/2 rounded-full bg-primary opacity-0 transition group-hover:opacity-100"
+            class="pointer-events-none absolute top-1/2 z-30 size-3 -translate-y-1/2 rounded-full bg-primary opacity-0 transition group-hover:opacity-100"
             :style="{ left: `calc(${playedPct}% - 6px)` }"
           />
         </div>
@@ -132,10 +154,25 @@
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button size="sm" variant="outline" :class="{ 'border-primary bg-primary/15 text-primary': state.loopA !== null || state.loopB !== null }" @click="setLoopA" title="Set loop start (A)">A</Button>
-          <Button size="sm" variant="outline" :class="{ 'border-primary bg-primary/15 text-primary': state.loopB !== null }" @click="setLoopB" title="Set loop end (B)">B</Button>
-          <Button v-if="state.loopA !== null || state.loopB !== null" size="icon" variant="ghost" @click="clearLoop" title="Clear loop">
-            <RepeatIcon class="size-4 text-primary" />
+          <Button
+            size="sm"
+            variant="outline"
+            class="font-mono font-semibold"
+            :class="{ 'border-primary bg-primary/15 text-primary': state.pendingStart !== null }"
+            @click="startSection"
+            title="Mark section start (A)"
+          >
+            [ Start
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            class="font-mono font-semibold disabled:cursor-default disabled:opacity-55"
+            :disabled="!canEnd"
+            @click="addSection"
+            title="Mark section end (B)"
+          >
+            End ]
           </Button>
 
           <Button size="icon" variant="ghost" :class="{ 'text-primary': state.video?.favorite }" @click="toggleFavorite" title="Add to favorites">
@@ -160,7 +197,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import {
   HeadphonesIcon,
   HeartIcon,
@@ -171,7 +208,6 @@ import {
   PictureInPicture2Icon,
   PlayIcon,
   PlusIcon,
-  RepeatIcon,
   SkipBackIcon,
   SkipForwardIcon,
   SmartphoneIcon,
@@ -189,11 +225,13 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { formatDuration } from '@/lib/format'
+import { sectionColor } from '@/lib/sections'
 import { usePlayer } from '@/composables/usePlayer'
 import { useQueue } from '@/composables/useQueue'
 import { router } from '@/router'
 import SourceBadge from '@/components/SourceBadge.vue'
 import EmbedFallback from './EmbedFallback.vue'
+import type { VideoSection } from '@shared/types'
 
 const {
   state,
@@ -203,9 +241,10 @@ const {
   setVolume,
   toggleMuted,
   setSpeed,
-  setLoopA,
-  setLoopB,
-  clearLoop,
+  sections,
+  startSection,
+  addSection,
+  playSection,
   toggleAudioOnly,
   toggleFocusMode,
   toggleFavorite,
@@ -221,6 +260,16 @@ const {
   videoEl
 } = usePlayer()
 const queue = useQueue()
+
+const hoveredId = ref<string | null>(null)
+const hoveredSection = computed(() => sections.value.find((s) => s.id === hoveredId.value) ?? null)
+const canEnd = computed(
+  () => state.pendingStart !== null && state.currentTime > state.pendingStart && sections.value.length < 8
+)
+
+function onBandClick(sec: VideoSection): void {
+  playSection(sec)
+}
 
 const speedOptions = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
 

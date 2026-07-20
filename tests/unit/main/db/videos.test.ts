@@ -156,6 +156,14 @@ describe('patchVideo', () => {
     const result = videos.patchVideo(id, {})
     expect(result).toEqual(before)
   })
+
+  it('round-trips sections as JSON', () => {
+    const id = seedVideo()
+    expect(videos.getVideo(id)!.sections).toEqual([])
+    const sections = [{ id: 's1', start: 1, end: 5, name: 'Intro', notes: 'slow down' }]
+    videos.patchVideo(id, { sections })
+    expect(videos.getVideo(id)!.sections).toEqual(sections)
+  })
 })
 
 describe('setDownloadResult', () => {

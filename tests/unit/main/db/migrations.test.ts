@@ -7,10 +7,10 @@ function columns(db: Database.Database, table: string): string[] {
 }
 
 describe('runMigrations', () => {
-  it('brings a fresh db to user_version 2', () => {
+  it('brings a fresh db to user_version 3', () => {
     const db = new Database(':memory:')
     runMigrations(db)
-    expect(db.pragma('user_version', { simple: true })).toBe(2)
+    expect(db.pragma('user_version', { simple: true })).toBe(3)
     db.close()
   })
 
@@ -28,7 +28,7 @@ describe('runMigrations', () => {
     const db = new Database(':memory:')
     runMigrations(db)
     expect(() => runMigrations(db)).not.toThrow()
-    expect(db.pragma('user_version', { simple: true })).toBe(2)
+    expect(db.pragma('user_version', { simple: true })).toBe(3)
     db.close()
   })
 

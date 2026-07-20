@@ -21,6 +21,7 @@ function makeVideo(overrides: Partial<VideoDto>): VideoDto {
     watched: false,
     favorite: false,
     notes: '',
+    sections: [],
     lastPlayedAt: null,
     createdAt: 0,
     updatedAt: 0,

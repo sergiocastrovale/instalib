@@ -21,9 +21,8 @@ function makeFakePlayer(): Player {
     setMuted: vi.fn(),
     toggleMuted: vi.fn(),
     setSpeed: vi.fn(),
-    setLoopA: vi.fn(),
-    setLoopB: vi.fn(),
-    clearLoop: vi.fn(),
+    startSection: vi.fn(),
+    addSection: vi.fn(),
     toggleAudioOnly: vi.fn(),
     toggleFocusMode: vi.fn(),
     markWatched: vi.fn(),
@@ -117,13 +116,13 @@ describe('usePlayerHotkeys', () => {
     expect(player.toggleFavorite).toHaveBeenCalled()
   })
 
-  it('a/b set loop points', () => {
+  it('a/b mark section start/end', () => {
     const player = makeFakePlayer()
     mountHotkeys(player)
     press('a')
     press('b')
-    expect(player.setLoopA).toHaveBeenCalled()
-    expect(player.setLoopB).toHaveBeenCalled()
+    expect(player.startSection).toHaveBeenCalled()
+    expect(player.addSection).toHaveBeenCalled()
   })
 
   it('? invokes the onHelp callback', () => {

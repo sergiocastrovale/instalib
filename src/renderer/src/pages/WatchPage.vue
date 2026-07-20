@@ -26,11 +26,11 @@
           <p class="text-sm text-muted-foreground">Saved {{ formatDate(video.savedAt) }}</p>
         </div>
         <div class="flex items-center gap-2">
-          <Button size="sm" variant="outline" :class="{ 'text-destructive': video.favorite }" @click="player.toggleFavorite">
-            <HeartIcon class="size-4" :fill="video.favorite ? 'currentColor' : 'none'" /> {{ video.favorite ? 'Favorited' : 'Favorite' }}
+          <Button size="sm" variant="outline" :class="{ 'text-destructive': activeVideo!.favorite }" @click="player.toggleFavorite">
+            <HeartIcon class="size-4" :fill="activeVideo!.favorite ? 'currentColor' : 'none'" /> {{ activeVideo!.favorite ? 'Favorited' : 'Favorite' }}
           </Button>
-          <Button size="sm" variant="outline" :class="{ 'text-primary': video.watched }" @click="player.toggleWatched">
-            <CheckCircle2Icon class="size-4" /> {{ video.watched ? 'Watched' : 'Mark watched' }}
+          <Button size="sm" variant="outline" :class="{ 'text-primary': activeVideo!.watched }" @click="player.toggleWatched">
+            <CheckCircle2Icon class="size-4" /> {{ activeVideo!.watched ? 'Watched' : 'Mark watched' }}
           </Button>
           <Button size="sm" variant="outline" @click="openOnInstagram">
             <ExternalLinkIcon class="size-4" /> Open on Instagram
@@ -41,22 +41,33 @@
 
       <p v-if="video.caption && !player.state.focusMode" class="whitespace-pre-line rounded-lg border p-3 text-sm text-muted-foreground">{{ video.caption }}</p>
 
-      <NotesPanel v-if="!player.state.focusMode" :model-value="video.notes" @save="player.saveNotes" />
+      <NotesPanel v-if="!player.state.focusMode" :model-value="activeVideo!.notes" @save="player.saveNotes" />
     </div>
 
-    <QueueList
-      v-if="!player.state.focusMode"
-      :videos="queue.videos.value"
-      :active-id="video.id"
-      :autoplay="queue.autoplay.value"
-      :shuffle-on="queue.shuffleOn.value"
-      :list-id="listId"
-      :from="fromOrigin"
-      @update:autoplay="queue.autoplay.value = $event"
-      @shuffle="queue.shuffleQueue(video.id)"
-    />
+    <div v-if="!player.state.focusMode" class="flex flex-col gap-6">
+      <SectionsPanel
+        v-if="activeVideo!.sections.length"
+        :sections="activeVideo!.sections"
+        :active-id="player.state.activeSectionId"
+        @play="player.playSection"
+        @edit="openEdit"
+        @delete="player.deleteSection"
+        @stop-looping="player.stopLooping"
+      />
+      <QueueList
+        :videos="queue.videos.value"
+        :active-id="video.id"
+        :autoplay="queue.autoplay.value"
+        :shuffle-on="queue.shuffleOn.value"
+        :list-id="listId"
+        :from="fromOrigin"
+        @update:autoplay="queue.autoplay.value = $event"
+        @shuffle="queue.shuffleQueue(video.id)"
+      />
+    </div>
 
     <ShortcutsDialog v-model:open="showShortcuts" />
+    <SectionEditDialog v-model:open="editOpen" :section="editingSection" @save="onSaveSection" />
     </div>
   </div>
 </template>
@@ -76,7 +87,9 @@ import NotesPanel from '@/components/NotesPanel.vue'
 import Breadcrumbs, { type BreadcrumbItem } from '@/components/Breadcrumbs.vue'
 import QueueList from '@/components/QueueList.vue'
 import ShortcutsDialog from '@/components/ShortcutsDialog.vue'
-import type { CollectionDto, VideoDto } from '@shared/types'
+import SectionsPanel from '@/components/SectionsPanel.vue'
+import SectionEditDialog from '@/components/SectionEditDialog.vue'
+import type { CollectionDto, VideoDto, VideoSection } from '@shared/types'
 
 const route = useRoute()
 const videoId = computed(() => route.params.id as string)
@@ -112,8 +125,29 @@ const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
 const player = usePlayer()
 const queue = useQueue()
 
+// player.loadVideo() is sometimes skipped for the current video (e.g. after
+// next/prev/autoplay already loaded it into player.state.video before the
+// route change lands here) - in that case this ref's own fetch is a separate
+// object that never receives the player's mutations (favorite/watched/notes/
+// sections). Prefer player.state.video whenever it's the same video.
+const activeVideo = computed<VideoDto | null>(() => {
+  const pv = player.state.video
+  return pv && video.value && pv.id === video.value.id ? pv : video.value
+})
+
 const showShortcuts = ref(false)
 const dockSlot = ref<HTMLElement | null>(null)
+const editOpen = ref(false)
+const editingSection = ref<VideoSection | null>(null)
+
+function openEdit(sec: VideoSection): void {
+  editingSection.value = sec
+  editOpen.value = true
+}
+
+function onSaveSection(payload: { name: string; notes: string }): void {
+  if (editingSection.value) player.updateSection(editingSection.value.id, payload)
+}
 
 async function openOnInstagram(): Promise<void> {
   if (!video.value) return

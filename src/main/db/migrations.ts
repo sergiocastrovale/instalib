@@ -56,6 +56,10 @@ const MIGRATIONS: string[] = [
   // v2
   `
   ALTER TABLE videos DROP COLUMN learned;
+  `,
+  // v3
+  `
+  ALTER TABLE videos ADD COLUMN sections TEXT NOT NULL DEFAULT '[]';
   `
 ]
 

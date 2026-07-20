@@ -22,6 +22,7 @@ function makeVideo(overrides: Partial<VideoDto> = {}): VideoDto {
     watched: false,
     favorite: false,
     notes: '',
+    sections: [],
     lastPlayedAt: null,
     createdAt: 0,
     updatedAt: 0,
@@ -86,24 +87,155 @@ describe('setVolume', () => {
   })
 })
 
-describe('loop A/B', () => {
-  it('jumps playback back to loopA once currentTime reaches loopB', () => {
+describe('sections', () => {
+  it('endSection captures [min,max] of pendingStart/currentTime and discards spans under 0.5s', async () => {
+    const player = usePlayerModule.usePlayer()
+    player.state.video = makeVideo()
+
+    player.state.currentTime = 0.2
+    player.startSection()
+    player.state.currentTime = 0.3
+    await player.addSection()
+    expect(player.state.video!.sections).toHaveLength(0)
+
+    player.state.currentTime = 15
+    player.startSection()
+    player.state.currentTime = 5
+    await player.addSection()
+    expect(player.state.video!.sections).toEqual([
+      expect.objectContaining({ start: 5, end: 15, name: 'Section 1', notes: '' })
+    ])
+    expect(player.state.pendingStart).toBeNull()
+  })
+
+  it('endSection is blocked once there are already 8 sections', () => {
+    const player = usePlayerModule.usePlayer()
+    const existing = Array.from({ length: 8 }, (_, i) => ({
+      id: `s${i}`,
+      start: i,
+      end: i + 0.5,
+      name: `Section ${i + 1}`,
+      notes: ''
+    }))
+    player.state.video = makeVideo({ sections: existing })
+    player.state.currentTime = 20
+    player.startSection()
+    player.state.currentTime = 25
+
+    expect(player.endSection()).toBeNull()
+    expect(player.state.pendingStart).toBeNull()
+  })
+
+  it('loops playback back to the active section start once currentTime reaches its end', () => {
     const player = usePlayerModule.usePlayer()
     const el = makeVideoEl()
     player.bindVideoEl(el)
-
-    el.currentTime = 5
-    player.onTimeUpdate()
-    player.setLoopA()
-
-    el.currentTime = 15
-    player.onTimeUpdate()
-    player.setLoopB()
+    player.state.video = makeVideo({
+      sections: [{ id: 's1', start: 5, end: 15, name: 'Section 1', notes: '' }]
+    })
+    player.playSection(player.state.video.sections[0])
 
     el.currentTime = 15
     player.onTimeUpdate()
 
     expect(el.currentTime).toBe(5)
+  })
+
+  it('stopLooping clears the active section so playback no longer wraps', () => {
+    const player = usePlayerModule.usePlayer()
+    const el = makeVideoEl()
+    player.bindVideoEl(el)
+    player.state.video = makeVideo({
+      sections: [{ id: 's1', start: 5, end: 15, name: 'Section 1', notes: '' }]
+    })
+    player.playSection(player.state.video.sections[0])
+    player.stopLooping()
+
+    el.currentTime = 15
+    player.onTimeUpdate()
+
+    expect(el.currentTime).toBe(15)
+  })
+
+  it('auto-activates looping once natural playback reaches a section start, with no explicit selection', () => {
+    const player = usePlayerModule.usePlayer()
+    const el = makeVideoEl()
+    player.bindVideoEl(el)
+    player.state.video = makeVideo({
+      sections: [{ id: 's1', start: 5, end: 15, name: 'Section 1', notes: '' }]
+    })
+
+    el.currentTime = 4
+    player.onTimeUpdate()
+    expect(player.state.activeSectionId).toBeNull()
+
+    el.currentTime = 5
+    player.onTimeUpdate()
+    expect(player.state.activeSectionId).toBe('s1')
+
+    el.currentTime = 15
+    player.onTimeUpdate()
+    expect(el.currentTime).toBe(5)
+  })
+
+  it('seeking outside any section stops looping and plays on normally', () => {
+    const player = usePlayerModule.usePlayer()
+    const el = makeVideoEl()
+    player.bindVideoEl(el)
+    player.state.video = makeVideo({
+      sections: [{ id: 's1', start: 5, end: 15, name: 'Section 1', notes: '' }]
+    })
+    player.playSection(player.state.video.sections[0])
+    expect(player.state.activeSectionId).toBe('s1')
+
+    player.seek(50)
+    expect(player.state.activeSectionId).toBeNull()
+
+    el.currentTime = 60
+    player.onTimeUpdate()
+    expect(el.currentTime).toBe(60)
+  })
+
+  it('seeking directly into a different section activates that one instead', () => {
+    const player = usePlayerModule.usePlayer()
+    const el = makeVideoEl()
+    player.bindVideoEl(el)
+    player.state.video = makeVideo({
+      sections: [
+        { id: 's1', start: 5, end: 15, name: 'Section 1', notes: '' },
+        { id: 's2', start: 30, end: 40, name: 'Section 2', notes: '' }
+      ]
+    })
+    player.playSection(player.state.video.sections[0])
+
+    player.seek(32)
+    expect(player.state.activeSectionId).toBe('s2')
+  })
+
+  it('stopLooping suppresses reactivation while still inside the section, until playback actually leaves it', () => {
+    const player = usePlayerModule.usePlayer()
+    const el = makeVideoEl()
+    player.bindVideoEl(el)
+    player.state.video = makeVideo({
+      sections: [{ id: 's1', start: 5, end: 15, name: 'Section 1', notes: '' }]
+    })
+    player.playSection(player.state.video.sections[0])
+    player.stopLooping()
+
+    // still inside [5,15) - must NOT reactivate on the next tick
+    el.currentTime = 10
+    player.onTimeUpdate()
+    expect(player.state.activeSectionId).toBeNull()
+
+    // leaves the range entirely
+    el.currentTime = 20
+    player.onTimeUpdate()
+    expect(player.state.activeSectionId).toBeNull()
+
+    // re-entering later (e.g. looped back around) activates it again
+    el.currentTime = 5
+    player.onTimeUpdate()
+    expect(player.state.activeSectionId).toBe('s1')
   })
 })
 

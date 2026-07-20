@@ -1,5 +1,5 @@
-import { nextTick, reactive, shallowRef } from 'vue'
-import type { VideoDto, VideoPatch, PlaybackSourceKind } from '@shared/types'
+import { computed, nextTick, reactive, shallowRef } from 'vue'
+import type { VideoDto, VideoPatch, VideoSection, PlaybackSourceKind } from '@shared/types'
 import { useQueue } from './useQueue'
 import { useLibraryStore } from '../stores/library'
 import { router } from '../router'
@@ -13,8 +13,8 @@ interface PlayerState {
   muted: boolean
   volume: number
   speed: number
-  loopA: number | null
-  loopB: number | null
+  pendingStart: number | null
+  activeSectionId: string | null
   audioOnly: boolean
   dockEl: HTMLElement | null
   source: PlaybackSourceKind | null
@@ -32,8 +32,8 @@ const state = reactive<PlayerState>({
   muted: false,
   volume: 1,
   speed: 1,
-  loopA: null,
-  loopB: null,
+  pendingStart: null,
+  activeSectionId: null,
   audioOnly: false,
   dockEl: null,
   source: null,
@@ -45,6 +45,10 @@ const state = reactive<PlayerState>({
 const videoEl = shallowRef<HTMLVideoElement | null>(null)
 let progressTimer: ReturnType<typeof setInterval> | null = null
 let hasRetriedResolve = false
+// section the user explicitly stopped looping - suppresses auto-reentry until
+// playback actually leaves its range, so onTimeUpdate doesn't immediately
+// reactivate it on the very next tick
+let dismissedSectionId: string | null = null
 
 function patchVideo(patch: VideoPatch): Promise<void> {
   if (!state.video) return Promise.resolve()
@@ -104,8 +108,9 @@ export function usePlayer() {
   async function loadVideo(video: VideoDto, opts: { autoplay?: boolean } = {}): Promise<void> {
     const isSameVideo = state.video?.id === video.id
     state.video = video
-    state.loopA = null
-    state.loopB = null
+    state.pendingStart = null
+    state.activeSectionId = null
+    dismissedSectionId = null
     state.speed = video.speed || 1
     hasRetriedResolve = false
     queue.setIndexById(video.id)
@@ -143,7 +148,12 @@ export function usePlayer() {
 
   function seek(sec: number): void {
     if (!videoEl.value) return
-    videoEl.value.currentTime = Math.max(0, Math.min(sec, state.duration || sec))
+    const clamped = Math.max(0, Math.min(sec, state.duration || sec))
+    videoEl.value.currentTime = clamped
+    // explicit seek: loop the section landed in, or play normally if outside all of them
+    dismissedSectionId = null
+    const target = sections.value.find((s) => clamped >= s.start && clamped < s.end)
+    state.activeSectionId = target ? target.id : null
   }
 
   function seekBy(deltaSec: number): void {
@@ -175,19 +185,57 @@ export function usePlayer() {
     }
   }
 
-  function setLoopA(): void {
-    state.loopA = state.currentTime
-    if (state.loopB !== null && state.loopB <= state.loopA) state.loopB = null
+  const sections = computed<VideoSection[]>(() => state.video?.sections ?? [])
+
+  function startSection(): void {
+    state.pendingStart = state.currentTime
   }
 
-  function setLoopB(): void {
-    state.loopB = state.currentTime
-    if (state.loopA !== null && state.loopA >= state.loopB) state.loopA = null
+  function endSection(): VideoSection | null {
+    if (state.pendingStart == null || sections.value.length >= 8) {
+      state.pendingStart = null
+      return null
+    }
+    const start = Math.min(state.pendingStart, state.currentTime)
+    const end = Math.max(state.pendingStart, state.currentTime)
+    state.pendingStart = null
+    if (end - start < 0.5) return null
+    return {
+      id: crypto.randomUUID(),
+      start,
+      end,
+      name: `Section ${sections.value.length + 1}`,
+      notes: ''
+    }
   }
 
-  function clearLoop(): void {
-    state.loopA = null
-    state.loopB = null
+  async function addSection(): Promise<void> {
+    const sec = endSection()
+    if (!sec) return
+    await patchVideo({ sections: [...sections.value, sec] })
+    state.activeSectionId = sec.id
+  }
+
+  async function updateSection(id: string, patch: { name: string; notes: string }): Promise<void> {
+    const updated = sections.value.map((s) => (s.id === id ? { ...s, ...patch } : s))
+    await patchVideo({ sections: updated })
+  }
+
+  async function deleteSection(id: string): Promise<void> {
+    const updated = sections.value.filter((s) => s.id !== id)
+    if (state.activeSectionId === id) state.activeSectionId = null
+    if (dismissedSectionId === id) dismissedSectionId = null
+    await patchVideo({ sections: updated })
+  }
+
+  function playSection(sec: VideoSection): void {
+    seek(sec.start)
+    play()
+  }
+
+  function stopLooping(): void {
+    dismissedSectionId = state.activeSectionId
+    state.activeSectionId = null
   }
 
   function toggleAudioOnly(): void {
@@ -242,8 +290,16 @@ export function usePlayer() {
     const el = videoEl.value
     if (!el) return
     state.currentTime = el.currentTime
-    if (state.loopA !== null && state.loopB !== null && el.currentTime >= state.loopB) {
-      el.currentTime = state.loopA
+    if (state.activeSectionId !== null) {
+      const sec = sections.value.find((s) => s.id === state.activeSectionId)
+      if (sec && el.currentTime >= sec.end) el.currentTime = sec.start
+    } else {
+      const entered = sections.value.find((s) => el.currentTime >= s.start && el.currentTime < s.end)
+      if (entered && entered.id !== dismissedSectionId) {
+        state.activeSectionId = entered.id
+      } else if (!entered) {
+        dismissedSectionId = null
+      }
     }
     if (el.buffered.length > 0) {
       state.buffered = el.buffered.end(el.buffered.length - 1)
@@ -311,9 +367,14 @@ export function usePlayer() {
     setMuted,
     toggleMuted,
     setSpeed,
-    setLoopA,
-    setLoopB,
-    clearLoop,
+    sections,
+    startSection,
+    endSection,
+    addSection,
+    updateSection,
+    deleteSection,
+    playSection,
+    stopLooping,
     toggleAudioOnly,
     toggleFocusMode,
     markWatched,

@@ -2,6 +2,14 @@ export type VideoStatus = 'pending' | 'downloading' | 'downloaded' | 'failed' | 
 export type PlaybackSourceKind = 'local' | 'web' | 'embed'
 export type CollectionKind = 'imported' | 'user'
 
+export interface VideoSection {
+  id: string
+  start: number
+  end: number
+  name: string
+  notes: string
+}
+
 export interface VideoDto {
   id: string
   shortcode: string
@@ -19,6 +27,7 @@ export interface VideoDto {
   watched: boolean
   favorite: boolean
   notes: string
+  sections: VideoSection[]
   lastPlayedAt: number | null
   createdAt: number
   updatedAt: number
@@ -133,6 +142,6 @@ export interface BrowserOption {
 export type VideoPatch = Partial<
   Pick<
     VideoDto,
-    'positionSec' | 'speed' | 'watched' | 'favorite' | 'notes'
+    'positionSec' | 'speed' | 'watched' | 'favorite' | 'notes' | 'sections'
   >
 >

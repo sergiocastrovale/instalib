@@ -7,7 +7,7 @@ describe('smoke: better-sqlite3 loads under vitest', () => {
     try {
       const info = db.getDbInfo()
       expect(info.engine).toBe('better-sqlite3')
-      expect(info.schemaVersion).toBe(2)
+      expect(info.schemaVersion).toBe(3)
     } finally {
       dispose()
     }
