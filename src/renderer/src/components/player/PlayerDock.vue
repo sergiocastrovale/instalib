@@ -31,6 +31,13 @@
           <div v-if="state.resolving" class="absolute inset-0 flex items-center justify-center bg-black/40">
             <Loader2Icon class="size-10 animate-spin text-white" />
           </div>
+          <div
+            v-else-if="state.countdownSec !== null"
+            class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/60"
+          >
+            <span class="font-mono text-6xl font-semibold text-white">{{ state.countdownSec }}</span>
+            <span v-if="activeSection" class="text-sm text-white/70">{{ activeSection.name }}</span>
+          </div>
           <button
             v-else-if="!state.playing && !mini"
             class="absolute inset-0 flex items-center justify-center bg-black/20 transition hover:bg-black/30"
@@ -263,6 +270,7 @@ const queue = useQueue()
 
 const hoveredId = ref<string | null>(null)
 const hoveredSection = computed(() => sections.value.find((s) => s.id === hoveredId.value) ?? null)
+const activeSection = computed(() => sections.value.find((s) => s.id === state.activeSectionId) ?? null)
 const canEnd = computed(
   () => state.pendingStart !== null && state.currentTime > state.pendingStart && sections.value.length < 8
 )

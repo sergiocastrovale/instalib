@@ -1,6 +1,13 @@
 import { randomUUID } from 'node:crypto'
 import { getDb } from './index'
-import type { VideoDto, VideoListQuery, VideoPatch, VideoSection, VideoStatus } from '@shared/types'
+import type {
+  SectionRamp,
+  VideoDto,
+  VideoListQuery,
+  VideoPatch,
+  VideoSection,
+  VideoStatus
+} from '@shared/types'
 
 interface VideoRow {
   id: string
@@ -27,10 +34,39 @@ interface VideoRow {
   updated_at: number
 }
 
+function normalizeRamp(raw: unknown): SectionRamp | undefined {
+  if (!raw || typeof raw !== 'object') return undefined
+  const r = raw as Record<string, unknown>
+  const keys = ['startAt', 'step', 'endAt', 'repsPerStep'] as const
+  if (!keys.every((k) => typeof r[k] === 'number' && Number.isFinite(r[k]))) return undefined
+  return {
+    startAt: r.startAt as number,
+    step: r.step as number,
+    endAt: r.endAt as number,
+    repsPerStep: r.repsPerStep as number
+  }
+}
+
+function normalizeSection(raw: VideoSection): VideoSection {
+  const section: VideoSection = {
+    id: raw.id,
+    start: raw.start,
+    end: raw.end,
+    name: raw.name,
+    notes: raw.notes
+  }
+  if (typeof raw.countInSec === 'number' && Number.isFinite(raw.countInSec) && raw.countInSec > 0) {
+    section.countInSec = raw.countInSec
+  }
+  const ramp = normalizeRamp(raw.ramp)
+  if (ramp) section.ramp = ramp
+  return section
+}
+
 function parseSections(raw: string): VideoSection[] {
   try {
     const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : []
+    return Array.isArray(parsed) ? parsed.map(normalizeSection) : []
   } catch {
     return []
   }

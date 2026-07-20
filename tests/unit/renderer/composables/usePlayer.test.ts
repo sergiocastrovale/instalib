@@ -239,6 +239,118 @@ describe('sections', () => {
   })
 })
 
+describe('section practice options', () => {
+  it('applies the ramp start rate on entry and steps it on every wrap', () => {
+    const player = usePlayerModule.usePlayer()
+    const el = makeVideoEl()
+    player.bindVideoEl(el)
+    player.state.video = makeVideo({
+      sections: [
+        {
+          id: 's1',
+          start: 5,
+          end: 15,
+          name: 'Section 1',
+          notes: '',
+          ramp: { startAt: 0.5, step: 0.05, endAt: 0.6, repsPerStep: 1 }
+        }
+      ]
+    })
+    player.playSection(player.state.video.sections[0])
+    expect(player.state.speed).toBeCloseTo(0.5)
+    expect(player.state.repCount).toBe(0)
+
+    el.currentTime = 15
+    player.onTimeUpdate()
+    expect(el.currentTime).toBe(5)
+    expect(player.state.repCount).toBe(1)
+    expect(player.state.speed).toBeCloseTo(0.55)
+
+    el.currentTime = 15
+    player.onTimeUpdate()
+    el.currentTime = 15
+    player.onTimeUpdate()
+    expect(player.state.speed).toBeCloseTo(0.6)
+  })
+
+  it('does not persist ramp rates and restores the video speed when looping stops', () => {
+    const patch = vi.fn(() => Promise.resolve(null))
+    window.api.videosPatch = patch as never
+    const player = usePlayerModule.usePlayer()
+    const el = makeVideoEl()
+    player.bindVideoEl(el)
+    player.state.video = makeVideo({
+      speed: 1.25,
+      sections: [
+        {
+          id: 's1',
+          start: 5,
+          end: 15,
+          name: 'Section 1',
+          notes: '',
+          ramp: { startAt: 0.5, step: 0.05, endAt: 1, repsPerStep: 1 }
+        }
+      ]
+    })
+    player.playSection(player.state.video.sections[0])
+    el.currentTime = 15
+    player.onTimeUpdate()
+
+    expect(patch).not.toHaveBeenCalled()
+    expect(player.state.video!.speed).toBe(1.25)
+
+    player.stopLooping()
+    expect(player.state.speed).toBe(1.25)
+    expect(el.playbackRate).toBe(1.25)
+  })
+
+  it('pauses for the count-in on each wrap, then resumes from the section start', () => {
+    vi.useFakeTimers()
+    const player = usePlayerModule.usePlayer()
+    const el = makeVideoEl()
+    player.bindVideoEl(el)
+    player.state.video = makeVideo({
+      sections: [{ id: 's1', start: 5, end: 15, name: 'Section 1', notes: '', countInSec: 3 }]
+    })
+    player.playSection(player.state.video.sections[0])
+    expect(player.state.countdownSec).toBe(3)
+    expect(el.pause).toHaveBeenCalled()
+
+    vi.advanceTimersByTime(2000)
+    expect(player.state.countdownSec).toBe(1)
+    expect(el.play).not.toHaveBeenCalled()
+
+    vi.advanceTimersByTime(1000)
+    expect(player.state.countdownSec).toBeNull()
+    expect(el.currentTime).toBe(5)
+    expect(el.play).toHaveBeenCalled()
+
+    el.currentTime = 15
+    player.onTimeUpdate()
+    expect(player.state.countdownSec).toBe(3)
+    // still parked at the end until the count-in elapses
+    expect(el.currentTime).toBe(15)
+    vi.advanceTimersByTime(3000)
+    expect(el.currentTime).toBe(5)
+  })
+
+  it('cancels a running count-in when the loop is stopped', () => {
+    vi.useFakeTimers()
+    const player = usePlayerModule.usePlayer()
+    const el = makeVideoEl()
+    player.bindVideoEl(el)
+    player.state.video = makeVideo({
+      sections: [{ id: 's1', start: 5, end: 15, name: 'Section 1', notes: '', countInSec: 3 }]
+    })
+    player.playSection(player.state.video.sections[0])
+    player.stopLooping()
+
+    expect(player.state.countdownSec).toBeNull()
+    vi.advanceTimersByTime(5000)
+    expect(el.play).not.toHaveBeenCalled()
+  })
+})
+
 describe('onLoadedMetadata resume', () => {
   it('seeks to positionSec when >5s and <95% through', () => {
     const player = usePlayerModule.usePlayer()

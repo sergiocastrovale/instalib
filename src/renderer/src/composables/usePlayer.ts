@@ -1,5 +1,6 @@
 import { computed, nextTick, reactive, shallowRef } from 'vue'
 import type { VideoDto, VideoPatch, VideoSection, PlaybackSourceKind } from '@shared/types'
+import { rampRate } from '../lib/sections'
 import { useQueue } from './useQueue'
 import { useLibraryStore } from '../stores/library'
 import { router } from '../router'
@@ -15,6 +16,8 @@ interface PlayerState {
   speed: number
   pendingStart: number | null
   activeSectionId: string | null
+  repCount: number
+  countdownSec: number | null
   audioOnly: boolean
   dockEl: HTMLElement | null
   source: PlaybackSourceKind | null
@@ -34,6 +37,8 @@ const state = reactive<PlayerState>({
   speed: 1,
   pendingStart: null,
   activeSectionId: null,
+  repCount: 0,
+  countdownSec: null,
   audioOnly: false,
   dockEl: null,
   source: null,
@@ -44,6 +49,7 @@ const state = reactive<PlayerState>({
 
 const videoEl = shallowRef<HTMLVideoElement | null>(null)
 let progressTimer: ReturnType<typeof setInterval> | null = null
+let countInTimer: ReturnType<typeof setInterval> | null = null
 let hasRetriedResolve = false
 // section the user explicitly stopped looping - suppresses auto-reentry until
 // playback actually leaves its range, so onTimeUpdate doesn't immediately
@@ -58,6 +64,19 @@ function patchVideo(patch: VideoPatch): Promise<void> {
     () => {},
     () => {}
   )
+}
+
+// playback rate without persisting - the section ramp drives this constantly and
+// must not overwrite the video's own saved speed
+function applyRate(v: number): void {
+  state.speed = v
+  if (videoEl.value) videoEl.value.playbackRate = v
+}
+
+function clearCountIn(): void {
+  if (countInTimer) clearInterval(countInTimer)
+  countInTimer = null
+  state.countdownSec = null
 }
 
 function persistProgress(): void {
@@ -110,6 +129,8 @@ export function usePlayer() {
     state.video = video
     state.pendingStart = null
     state.activeSectionId = null
+    state.repCount = 0
+    clearCountIn()
     dismissedSectionId = null
     state.speed = video.speed || 1
     hasRetriedResolve = false
@@ -153,7 +174,11 @@ export function usePlayer() {
     // explicit seek: loop the section landed in, or play normally if outside all of them
     dismissedSectionId = null
     const target = sections.value.find((s) => clamped >= s.start && clamped < s.end)
-    state.activeSectionId = target ? target.id : null
+    if (target) {
+      if (target.id !== state.activeSectionId) enterSection(target)
+    } else if (state.activeSectionId !== null) {
+      exitSection()
+    }
   }
 
   function seekBy(deltaSec: number): void {
@@ -178,14 +203,51 @@ export function usePlayer() {
 
   function setSpeed(v: number): void {
     const clamped = Math.max(0.25, Math.min(2, Math.round(v * 20) / 20))
-    state.speed = clamped
-    if (videoEl.value) videoEl.value.playbackRate = clamped
+    applyRate(clamped)
     if (state.video) {
       patchVideo({ speed: clamped })
     }
   }
 
   const sections = computed<VideoSection[]>(() => state.video?.sections ?? [])
+
+  function enterSection(sec: VideoSection): void {
+    clearCountIn()
+    state.activeSectionId = sec.id
+    state.repCount = 0
+    if (sec.ramp) applyRate(rampRate(sec.ramp, 0))
+  }
+
+  function exitSection(): void {
+    clearCountIn()
+    state.activeSectionId = null
+    state.repCount = 0
+    applyRate(state.video?.speed || 1)
+  }
+
+  // pause for the section's count-in, then restart it from the top
+  function startCountIn(sec: VideoSection): void {
+    clearCountIn()
+    pause()
+    state.countdownSec = sec.countInSec ?? 0
+    countInTimer = setInterval(() => {
+      const remaining = (state.countdownSec ?? 1) - 1
+      if (remaining > 0) {
+        state.countdownSec = remaining
+        return
+      }
+      clearCountIn()
+      if (videoEl.value) videoEl.value.currentTime = sec.start
+      play()
+    }, 1000)
+  }
+
+  function restartSection(sec: VideoSection): void {
+    state.repCount++
+    if (sec.ramp) applyRate(rampRate(sec.ramp, state.repCount))
+    if (sec.countInSec) startCountIn(sec)
+    else if (videoEl.value) videoEl.value.currentTime = sec.start
+  }
 
   function startSection(): void {
     state.pendingStart = state.currentTime
@@ -216,26 +278,32 @@ export function usePlayer() {
     state.activeSectionId = sec.id
   }
 
-  async function updateSection(id: string, patch: { name: string; notes: string }): Promise<void> {
-    const updated = sections.value.map((s) => (s.id === id ? { ...s, ...patch } : s))
+  async function updateSection(
+    id: string,
+    patch: Partial<Omit<VideoSection, 'id'>>
+  ): Promise<void> {
+    const updated = sections.value.map((s) =>
+      s.id === id ? ({ ...s, ...patch } as VideoSection) : s
+    )
     await patchVideo({ sections: updated })
   }
 
   async function deleteSection(id: string): Promise<void> {
     const updated = sections.value.filter((s) => s.id !== id)
-    if (state.activeSectionId === id) state.activeSectionId = null
+    if (state.activeSectionId === id) exitSection()
     if (dismissedSectionId === id) dismissedSectionId = null
     await patchVideo({ sections: updated })
   }
 
   function playSection(sec: VideoSection): void {
     seek(sec.start)
-    play()
+    if (sec.countInSec) startCountIn(sec)
+    else play()
   }
 
   function stopLooping(): void {
     dismissedSectionId = state.activeSectionId
-    state.activeSectionId = null
+    exitSection()
   }
 
   function toggleAudioOnly(): void {
@@ -292,11 +360,11 @@ export function usePlayer() {
     state.currentTime = el.currentTime
     if (state.activeSectionId !== null) {
       const sec = sections.value.find((s) => s.id === state.activeSectionId)
-      if (sec && el.currentTime >= sec.end) el.currentTime = sec.start
+      if (sec && el.currentTime >= sec.end) restartSection(sec)
     } else {
       const entered = sections.value.find((s) => el.currentTime >= s.start && el.currentTime < s.end)
       if (entered && entered.id !== dismissedSectionId) {
-        state.activeSectionId = entered.id
+        enterSection(entered)
       } else if (!entered) {
         dismissedSectionId = null
       }

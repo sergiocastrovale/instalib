@@ -49,6 +49,8 @@
         v-if="activeVideo!.sections.length"
         :sections="activeVideo!.sections"
         :active-id="player.state.activeSectionId"
+        :rep-count="player.state.repCount"
+        :speed="player.state.speed"
         @play="player.playSection"
         @edit="openEdit"
         @delete="player.deleteSection"
@@ -145,7 +147,7 @@ function openEdit(sec: VideoSection): void {
   editOpen.value = true
 }
 
-function onSaveSection(payload: { name: string; notes: string }): void {
+function onSaveSection(payload: Partial<Omit<VideoSection, 'id'>>): void {
   if (editingSection.value) player.updateSection(editingSection.value.id, payload)
 }
 

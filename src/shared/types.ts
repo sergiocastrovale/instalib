@@ -2,12 +2,21 @@ export type VideoStatus = 'pending' | 'downloading' | 'downloaded' | 'failed' | 
 export type PlaybackSourceKind = 'local' | 'web' | 'embed'
 export type CollectionKind = 'imported' | 'user'
 
+export interface SectionRamp {
+  startAt: number
+  step: number
+  endAt: number
+  repsPerStep: number
+}
+
 export interface VideoSection {
   id: string
   start: number
   end: number
   name: string
   notes: string
+  countInSec?: number
+  ramp?: SectionRamp
 }
 
 export interface VideoDto {
